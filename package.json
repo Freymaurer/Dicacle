@@ -1,9 +1,13 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "dotnet tool restore && dotnet fable watch src --runFast vite",
     "build": "dotnet tool restore && dotnet fable src --run vite build --emptyOutDir",
-    "clean": "dotnet fable clean src --yes"
+    "clean": "dotnet fable clean src --yes",
+    "pretest": "dotnet fable clean tests --yes & dotnet fable tests -o tests/dist",
+    "posttest": "cd tests & dotnet run",
+    "test": "mocha tests/dist"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -11,6 +15,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^3.1.0",
+    "mocha": "^10.2.0",
     "vite": "^4.1.0"
   },
   "engines": {
