@@ -47,38 +47,45 @@ let private diceIconOf(diceValue: int, diceSize:int) =
 type private DiceRoll with
     member this.ToHtml() =
         let size = this.Dice.DiceSize
-        let mySpan (children: Fable.React.ReactElement list) = 
+        let container (children: Fable.React.ReactElement list) = 
             Html.span [
-                Html.span "["
-                yield! children
-                Html.span "]"
+                prop.children children
             ]
-        let createDizeSpans() = 
+        let sum = 
+            Html.span [
+                prop.className "mr-2 dice-result-subsum"
+                prop.text $"{this.Dice.Command.AsString}{this.DiceRollSum}"
+            ]
+        let createDiceIcons() = 
             [
+                sum
+                Html.span "["
                 for i in 0 .. (this.DiceRolled.Count-1) do
                     let roll = this.DiceRolled.[i]
                     let isLast = i = this.DiceRolled.Count-1
-                    yield diceIconOf(roll,size)
+                    diceIconOf(roll,size)
                     if not isLast then 
-                        yield Html.span " + "
+                        Html.span " + "
+                Html.span "]"
             ]
         if size = 0 then 
-            [Html.span (sprintf " +%i " this.DiceRollSum)] 
+            [sum] 
         else 
-            createDizeSpans()
-        |> mySpan
+            createDiceIcons()
+        |> container
 
 type private SetResult with
     member this.ToHtml() =
-        let sum = (this.Results |> List.sumBy (fun res -> res.DiceRollSum))
+        let sum = (this.Results |> Seq.sumBy (fun res -> if res.Dice.Command = Command.Substract then res.DiceRollSum * (-1) else res.DiceRollSum))
         Html.div [
             prop.className "dice-result-container is-flex is-align-items-center"
             prop.children [
                 Html.span [
+                    prop.className "dice-result-subsum-container"
                     prop.style [style.fontSize (length.px 10)]
                     prop.children [
                         for diceRoll in this.Results do
-                            diceRoll.ToHtml()
+                                diceRoll.ToHtml()
                     ]
                 ]
                 Html.span [
@@ -106,7 +113,8 @@ type private State = {
 
 let private rollDice(state:State) = 
     let sets = DiceParsing.parseStringToDice(state.Input)
-    Browser.Dom.console.log("[DICE]", ResizeArray(sets))
+    let arr = ResizeArray(sets)
+    Browser.Dom.console.log("[DICE]", arr)
     sets
     |> List.map (fun x -> x.roll())
     |> ResizeArray

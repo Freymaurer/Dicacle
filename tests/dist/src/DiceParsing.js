@@ -1,7 +1,7 @@
 import { toFail, remove, replace, printf, toText, join } from "../fable_modules/fable-library.4.0.1/String.js";
 import { map, ofArray } from "../fable_modules/fable-library.4.0.1/List.js";
 import { match, create, matches as matches_1 } from "../fable_modules/fable-library.4.0.1/RegExp.js";
-import { DiceSet_create_699046FF, DiceSet__roll, Dice_create_458B7DF0, Command_ofString_Z721C83C5, Command$reflection, Reroll_ofString_Z18115A39, Explode_ofString_Z18115A39, KeepDrop_ofString_Z18115A39 } from "./Classes.js";
+import { DiceSet_create_Z1AF666DC, DiceSet__roll, Dice_create_458B7DF0, Command_ofString_Z721C83C5, Command$reflection, Reroll_ofString_Z18115A39, Explode_ofString_Z18115A39, KeepDrop_ofString_Z18115A39 } from "./Classes.js";
 import { parse } from "../fable_modules/fable-library.4.0.1/Int32.js";
 import { Record } from "../fable_modules/fable-library.4.0.1/Types.js";
 import { record_type, string_type, int32_type } from "../fable_modules/fable-library.4.0.1/Reflection.js";
@@ -144,6 +144,6 @@ export function DiceParsingAux_parseDiceRoll(preDiceRoll) {
 }
 
 export function parseStringToDice(input) {
-    return map((set$) => DiceSet__roll(DiceSet_create_699046FF(set$.setCount, map(DiceParsingAux_parseDiceRoll, DiceParsingAux_parseDiceRolls(set$.diceRolls)))), DiceParsingAux_parseSets(input));
+    return map((set$) => DiceSet__roll(DiceSet_create_Z1AF666DC(set$.setCount, map(DiceParsingAux_parseDiceRoll, DiceParsingAux_parseDiceRolls(set$.diceRolls)))), DiceParsingAux_parseSets(input));
 }
 

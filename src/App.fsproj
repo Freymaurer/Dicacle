@@ -12,11 +12,11 @@
         <Compile Include="Routing.fs" />
         <None Include="index.html" />
         <Compile Include="Components\Component.Navbar.fs" />
+        <Compile Include="Pages\Page.Reference.fs" />
         <Compile Include="Pages\Page.Dicacle.fs" />
         <Compile Include="Components.fs" />
         <Compile Include="Main.fs" />
     </ItemGroup>
-    <ItemGroup />
     <ItemGroup>
         <PackageReference Include="Feliz" Version="2.6.0" />
         <PackageReference Include="Feliz.Bulma" Version="3.0.0" />

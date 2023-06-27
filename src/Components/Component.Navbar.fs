@@ -14,8 +14,8 @@ let private navbarStart() =
     let activePage = Browser.Dom.window.location.hash |> Routing.Pages.ofHash
     Bulma.navbarStart.div [
         pageLink(Routing.Pages.Dicacle, activePage)
-        pageLink(Routing.Pages.Counter, activePage)
-        pageLink(Routing.Pages.Hello, activePage)
+        pageLink(Routing.Pages.Reference, activePage)
+        //pageLink(Routing.Pages.Counter, activePage)
     ]
 
 let private navbarEnd = 
@@ -52,7 +52,7 @@ let private navbarMenu(isActive:bool) =
     Bulma.navbarMenu [
         if isActive then Bulma.navbarMenu.isActive
         prop.children [
-            //navbarStart()
+            navbarStart()
             navbarEnd
         ]
     ]

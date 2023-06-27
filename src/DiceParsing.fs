@@ -117,7 +117,8 @@ module DiceParsingAux =
             let diceSize = match m.Groups.["DiceSize"].Value with | "" -> 0 | anyNumber -> int anyNumber
             match diceSize with
             // if no diceSize, all other options are not valid.
-            | 0 -> Dice.create(diceCount, diceSize)
+            | 0 -> 
+                Dice.create(diceCount, diceSize, command)
             | _ ->
                 let diceRollParams = input.Remove(0,m.Length).Trim()
                 let explode = Pattern.tryExplode(diceRollParams)
@@ -133,6 +134,6 @@ let parseStringToDice(input:string) =
     let sets = parseSets input
     sets
     |> List.map (fun set ->
-        let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie))
+        let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie)) |> ResizeArray
         DiceSet.create(set.setCount, dice).roll()
     )

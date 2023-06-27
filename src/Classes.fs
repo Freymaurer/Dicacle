@@ -62,6 +62,11 @@ type Command =
         | "-" -> Command.Substract
         | anyelse -> failwith $"Unable to parse `{anyelse}` to `+` or `-`."
 
+    member this.AsString =
+        match this with
+        | Command.Add -> "+"
+        | Command.Substract -> "-"
+
 open System
 
 let rollOnceBy(max:int, rnd:Random) =
@@ -213,7 +218,7 @@ type Dice with
 
 type SetResult = {
     Index: int
-    Results: DiceRoll list
+    Results: ResizeArray<DiceRoll>
 } with
     static member create(i, res) = {
         Index = i
@@ -222,7 +227,7 @@ type SetResult = {
 
 type DiceSet = {
     SetCount: int
-    DiceRolls: Dice list
+    DiceRolls: ResizeArray<Dice>
     Results: ResizeArray<SetResult>
 } with
     static member create(count, diceRolls, ?results) = {
@@ -234,8 +239,8 @@ type DiceSet = {
         let results = 
             [
                 for i in 1 .. this.SetCount do
-                    let results = this.DiceRolls |> List.map (fun d -> d.roll())
-                    SetResult.create(i, results)
+                    let results = this.DiceRolls |> Seq.map (fun d -> d.roll())
+                    SetResult.create(i, ResizeArray(results))
             ]
             |> ResizeArray
         {this with Results = results}

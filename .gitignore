@@ -205,3 +205,4 @@ out
 *.fs.js
 *.fs.js.map
 docs
+/src/fable_modules

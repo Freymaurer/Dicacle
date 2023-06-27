@@ -5,7 +5,7 @@ import { sum as sum_2, singleton, collect, delay, toList } from "../fable_module
 import { rangeDouble } from "../fable_modules/fable-library.4.0.1/Range.js";
 import { comparePrimitives } from "../fable_modules/fable-library.4.0.1/Util.js";
 import { map, defaultArg } from "../fable_modules/fable-library.4.0.1/Option.js";
-import { map as map_1, empty } from "../fable_modules/fable-library.4.0.1/List.js";
+import { map as map_1 } from "../fable_modules/fable-library.4.0.1/List.js";
 
 export class KeepDrop extends Union {
     "constructor"(tag, fields) {
@@ -370,14 +370,15 @@ export class DiceSet extends Record {
 }
 
 export function DiceSet$reflection() {
-    return record_type("Classes.DiceSet", [], DiceSet, () => [["SetCount", int32_type], ["DiceRolls", list_type(Dice$reflection())], ["Results", list_type(SetResult$reflection())]]);
+    return record_type("Classes.DiceSet", [], DiceSet, () => [["SetCount", int32_type], ["DiceRolls", list_type(Dice$reflection())], ["Results", array_type(SetResult$reflection())]]);
 }
 
-export function DiceSet_create_699046FF(count, diceRolls, results) {
-    return new DiceSet(count, diceRolls, defaultArg(results, empty()));
+export function DiceSet_create_Z1AF666DC(count, diceRolls, results) {
+    return new DiceSet(count, diceRolls, defaultArg(results, []));
 }
 
 export function DiceSet__roll(this$) {
-    return new DiceSet(this$.SetCount, this$.DiceRolls, toList(delay(() => collect((i) => singleton(SetResult_create_45D5267B(i, map_1(Dice__roll, this$.DiceRolls))), rangeDouble(1, 1, this$.SetCount)))));
+    let arg;
+    return new DiceSet(this$.SetCount, this$.DiceRolls, (arg = toList(delay(() => collect((i) => singleton(SetResult_create_45D5267B(i, map_1(Dice__roll, this$.DiceRolls))), rangeDouble(1, 1, this$.SetCount)))), Array.from(arg)));
 }
 

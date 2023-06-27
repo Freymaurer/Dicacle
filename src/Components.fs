@@ -9,12 +9,8 @@ open Zanaptak.TypedCssClasses
 type Icon = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css", Naming.PascalCase>
 
 type Components =
-    /// <summary>
-    /// The simplest possible React component.
-    /// Shows a header with the text Hello World
-    /// </summary>
-    [<ReactComponent>]
-    static member HelloWorld() = Html.h1 "Hello World"
+
+    static member Reference() = Page.Reference.Main()
 
     /// <summary>
     /// A stateful React component that maintains a counter
@@ -50,10 +46,10 @@ type Components =
                         prop.children [
                             Bulma.heroBody [
                                 match currentPage with
-                                | Routing.Dicacle -> Components.Dicacle()
-                                | Routing.Hello -> Components.HelloWorld()
-                                | Routing.Counter -> Components.Counter()
-                                | Routing.NotFound -> Html.h1 "Not found"
+                                | Routing.Dicacle   -> Components.Dicacle()
+                                | Routing.Reference -> Components.Reference()
+                                | Routing.Counter   -> Components.Counter()
+                                | Routing.NotFound  -> Html.h1 "Not found"
                             ]
                             Bulma.heroFoot [
                                 Bulma.container [
