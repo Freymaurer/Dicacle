@@ -3,13 +3,27 @@
         <TargetFramework>net7.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="index.html" />
+        <Content Include="styles.css" />
+        <Compile Include="Literals.fs" />
         <Compile Include="Extensions.fs" />
+        <Compile Include="Classes.fs" />
+        <Compile Include="DiceIcon.fs" />
+        <Compile Include="DiceParsing.fs" />
+        <Compile Include="Routing.fs" />
+        <None Include="index.html" />
+        <Compile Include="Components\Component.Navbar.fs" />
+        <Compile Include="Pages\Page.Dicacle.fs" />
         <Compile Include="Components.fs" />
         <Compile Include="Main.fs" />
     </ItemGroup>
+    <ItemGroup />
     <ItemGroup>
         <PackageReference Include="Feliz" Version="2.6.0" />
+        <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
         <PackageReference Include="Feliz.Router" Version="4.0.0" />
+        <PackageReference Include="Zanaptak.TypedCssClasses" Version="1.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Update="FSharp.Core" Version="[7.0.300]" />
     </ItemGroup>
 </Project>

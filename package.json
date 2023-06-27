@@ -7,7 +7,8 @@
     "clean": "dotnet fable clean src --yes",
     "pretest": "dotnet fable clean tests --yes & dotnet fable tests -o tests/dist",
     "posttest": "cd tests & dotnet run",
-    "test": "mocha tests/dist"
+    "test": "mocha tests/dist",
+    "watchtests": "cd tests & dotnet watch run"
   },
   "dependencies": {
     "react": "^18.2.0",

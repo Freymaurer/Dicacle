@@ -1,0 +1,14 @@
+.dice-result-container {
+    font-size: 1.5rem
+}
+
+.dice-result-container span {
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    flex-wrap:wrap
+}
+
+.dice-roll-sum span {
+    font-size: 1.7rem !important
+}

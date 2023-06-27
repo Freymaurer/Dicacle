@@ -1,7 +1,12 @@
-namespace App
+﻿namespace App
 
 open Feliz
+open Feliz.Bulma
 open Feliz.Router
+
+open Zanaptak.TypedCssClasses
+
+type Icon = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css", Naming.PascalCase>
 
 type Components =
     /// <summary>
@@ -25,20 +30,52 @@ type Components =
             ]
         ]
 
+    static member Dicacle() = Page.Dicacle.Main()
+        
     /// <summary>
     /// A React component that uses Feliz.Router
     /// to determine what to show based on the current URL
     /// </summary>
     [<ReactComponent>]
     static member Router() =
-        let (currentUrl, updateUrl) = React.useState(Router.currentUrl())
+        let (currentPage, updatePage) = React.useState(Router.currentUrl() |> Routing.Pages.ofUrl)
+        let spanDivide = Html.span [prop.text " • "; prop.className "mx-1"]
         React.router [
-            router.onUrlChanged updateUrl
+            router.onUrlChanged (Routing.Pages.ofUrl >> updatePage)
             router.children [
-                match currentUrl with
-                | [ ] -> Html.h1 "Index"
-                | [ "hello" ] -> Components.HelloWorld()
-                | [ "counter" ] -> Components.Counter()
-                | otherwise -> Html.h1 "Not found"
+                Html.div [
+                    Component.Navbar.Main()
+                    Bulma.hero [
+                        Bulma.hero.isFullHeightWithNavbar
+                        prop.children [
+                            Bulma.heroBody [
+                                match currentPage with
+                                | Routing.Dicacle -> Components.Dicacle()
+                                | Routing.Hello -> Components.HelloWorld()
+                                | Routing.Counter -> Components.Counter()
+                                | Routing.NotFound -> Html.h1 "Not found"
+                            ]
+                            Bulma.heroFoot [
+                                Bulma.container [
+                                    Html.span [
+                                        Html.span "Icons from "
+                                        Html.a [
+                                            prop.href "https://www.flaticon.com"
+                                            prop.text "flaticon"
+                                        ]
+                                    ]
+                                    spanDivide
+                                    Html.span [
+                                        Html.a [
+                                            prop.href "https://fable.io"
+                                            prop.text "Fable"
+                                        ]
+                                        Html.span " |> ❤️"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ]

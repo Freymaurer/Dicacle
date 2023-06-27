@@ -9,6 +9,7 @@ open Expecto
 #endif
 let tests = 
     testList "main" [
+        Tests.DiceRoll.main
         Tests.Regex.main
     ]
 
