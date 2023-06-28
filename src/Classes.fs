@@ -100,7 +100,6 @@ type DiceRoll = {
         DiceRollSum = diceRollSum
     }
 
-
 type SetResult = {
     Index: int
     Results: ResizeArray<DiceRoll>
@@ -111,11 +110,13 @@ type SetResult = {
     }
 
 type DiceSet = {
+    Input: string
     SetCount: int
     DiceRolls: ResizeArray<Dice>
     Results: ResizeArray<SetResult>
 } with
-    static member create(count, diceRolls, ?results) = {
+    static member create(input:string, count, diceRolls, ?results) = {
+        Input = input
         SetCount = count
         DiceRolls = diceRolls
         Results = defaultArg results <| ResizeArray()

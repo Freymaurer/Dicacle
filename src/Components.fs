@@ -35,13 +35,11 @@ type Components =
     [<ReactComponent>]
     static member Router() =
         let (currentPage, updatePage) = React.useState(Router.currentUrl() |> Routing.Pages.ofUrl)
-        let spanDivide = Html.span [prop.text " • "; prop.className "mx-1"]
         React.router [
             router.onUrlChanged (Routing.Pages.ofUrl >> updatePage)
             router.children [
                 Html.div [
                     Component.Navbar.Main()
-                    Html.div [prop.id "Test"]
                     Bulma.hero [
                         Bulma.hero.isFullHeightWithNavbar
                         prop.children [
@@ -52,25 +50,7 @@ type Components =
                                 | Routing.Counter   -> Components.Counter()
                                 | Routing.NotFound  -> Html.h1 "Not found"
                             ]
-                            Bulma.heroFoot [
-                                Bulma.container [
-                                    Html.span [
-                                        Html.span "Icons from "
-                                        Html.a [
-                                            prop.href "https://www.flaticon.com"
-                                            prop.text "flaticon"
-                                        ]
-                                    ]
-                                    spanDivide
-                                    Html.span [
-                                        Html.a [
-                                            prop.href "https://fable.io"
-                                            prop.text "Fable"
-                                        ]
-                                        Html.span " |> ❤️"
-                                    ]
-                                ]
-                            ]
+                            Component.Footer.Main
                         ]
                     ]
                 ]

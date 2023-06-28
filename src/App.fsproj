@@ -16,6 +16,7 @@
         <Compile Include="States.fs" />
         <Compile Include="Components\Component.Modal.fs" />
         <Compile Include="Components\Component.DiceStorageModal.fs" />
+        <Compile Include="Components\Component.Footer.fs" />
         <Compile Include="Components\Component.Navbar.fs" />
         <Compile Include="Pages\Page.Reference.fs" />
         <Compile Include="Pages\Page.Dicacle.fs" />

@@ -44,3 +44,24 @@
 #command-container ul > li:hover {
     filter: brightness(90%)
 }
+
+#dice-roller-button .icon::before {
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    content: "Roll!";
+}
+
+@media screen and (max-width: 481px) {
+    #dice-roller-button, #dice-roller-dice-storage {
+        padding: 0.5em !important
+    }
+
+    #dice-roller-button .icon::before {
+        display: inline-block;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        font: var(--fa-font-solid);
+        content: "\f6cf";
+    }
+}

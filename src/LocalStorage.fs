@@ -24,3 +24,24 @@ module DiceStorage =
                 printfn "Could not find DiceStorage"
                 None
 
+[<RequireQualifiedAccess>]
+module History =
+
+    open Browser
+    open Fable.SimpleJson
+
+    let [<Literal>] History_Key = "History"
+
+    let write(storedDice: ResizeArray<Classes.DiceSet>) = 
+        let v = Json.serialize storedDice
+        WebStorage.localStorage.setItem(History_Key, v)
+
+    let load() =
+        try 
+            WebStorage.localStorage.getItem(History_Key)
+            |> Json.parseAs<ResizeArray<Classes.DiceSet>>
+            |> Some
+        with
+            |_ -> 
+                printfn "Could not find History"
+                None

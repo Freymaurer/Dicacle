@@ -7,18 +7,25 @@ open Dice.Roll
 open Dice.HtmlAux
 open States.Dicacle
 
-let private rollDice(state:State) = 
+let private event_rollDice(state:State, setState: State -> unit) =
     let input = if state.Input.StartsWith("/") then state.DiceStorage.[state.KeyFromInput] else state.Input
     let sets = Dice.Parsing.parseStringToDice(input)
     let arr = ResizeArray(sets)
     Browser.Dom.console.log("[DICE]", arr)
     let rnd = new System.Random()
-    sets
-    |> List.map (fun x -> x.rollBy(rnd))
-    |> ResizeArray
-
-let private event_rollDice(state:State, setState: State -> unit) =
-    let nextState = { state with Results = rollDice(state) }
+    let nextDiceSets = 
+        sets
+        |> List.map (fun x -> x.rollBy(rnd))
+        |> ResizeArray
+    let historySize = 200
+    let nextHistory =
+        for set in nextDiceSets do
+            state.History.Add(set)
+            if state.History.Count >= historySize then
+                state.History.RemoveRange(historySize,state.History.Count - historySize)
+        LocalStorage.History.write state.History
+        state.History
+    let nextState = { state with Results = nextDiceSets; History = nextHistory }
     setState nextState
 
 let private updateUIState (state: int option, cmds: 'a [], increase:bool) =
@@ -134,16 +141,16 @@ let private showSetsResults (state:State) =
         if state.Results.Count = 0 then
             Html.none
         else
-            for i in 1 .. state.Results.Count do
-            let set = state.Results.Item (i-1)
-            Bulma.field.div [
-                showSetResult set
-            ]
+            for set in state.Results do
+                Bulma.field.div [
+                    showSetResult set
+                ]
     ]
 
 let private storageButton(state, setState) =
     Bulma.button.button [
         Bulma.button.isLarge
+        prop.id ElementId.DiceRoller_DiceStorage
         prop.title "Manage stored dice"
         prop.role "button"
         prop.text "+"
@@ -154,12 +161,16 @@ let private storageButton(state, setState) =
 
 let private rollButton(state, setState) =
     Bulma.button.button [
+        prop.id ElementId.DicerRoller_Button
         Bulma.button.isLarge
         prop.role "button"
-        prop.text "Roll!"
+        //prop.text "Roll!"
         prop.onClick(fun e ->
             event_rollDice(state, setState)
         )
+        prop.children (Bulma.icon [
+            //Html.i [prop.className "fa-solid fa-dice-d20"]
+        ])
     ]
 
 [<ReactComponent>]
@@ -188,4 +199,3 @@ let Main() =
             showSetsResults state
         ]
     ]
-
