@@ -1,4 +1,4 @@
-﻿module Modal
+﻿module Component.Modal
 
 open Fable.React
 open Feliz

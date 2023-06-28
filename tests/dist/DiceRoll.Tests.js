@@ -1,16 +1,18 @@
 import { Expect_isTrue, Expect_hasLength, Test_testCase, Test_testList } from "./fable_modules/Fable.Mocha.2.16.0/Mocha.fs.js";
-import { KeepDrop, RollAux_keepDrop, Explode, RollAux_explode, rollMultiple } from "./src/Classes.js";
+import { RollAux_keepDrop, RollAux_explode, rollMultipleBy } from "./src/Dice/Dice.Roll.js";
+import { nonSeeded } from "./fable_modules/fable-library.4.0.1/Random.js";
 import { toArray, toList, map, average, max as max_1, min as min_1 } from "./fable_modules/fable-library.4.0.1/Seq.js";
 import { int32ToString, structuralHash, assertEqual, comparePrimitives } from "./fable_modules/fable-library.4.0.1/Util.js";
 import { ofArray, contains, singleton } from "./fable_modules/fable-library.4.0.1/List.js";
 import { rangeDouble } from "./fable_modules/fable-library.4.0.1/Range.js";
+import { KeepDrop, Explode } from "./src/Classes.js";
 import { array_type, equals, class_type, decimal_type, string_type, float64_type, bool_type, int32_type } from "./fable_modules/fable-library.4.0.1/Reflection.js";
 import { printf, toText } from "./fable_modules/fable-library.4.0.1/String.js";
 import { equalsWith } from "./fable_modules/fable-library.4.0.1/Array.js";
 import { seqToString } from "./fable_modules/fable-library.4.0.1/Types.js";
 
 export const tests_roll = Test_testList("roll", singleton(Test_testCase("check random", () => {
-    const rolls = rollMultiple(1000, 6);
+    const rolls = rollMultipleBy(1000, 6, nonSeeded());
     const min = min_1(rolls, {
         Compare: comparePrimitives,
     }) | 0;
@@ -32,8 +34,9 @@ export const tests_roll = Test_testList("roll", singleton(Test_testCase("check r
 export const tests_explode = Test_testList("explode", singleton(Test_testCase("explode once", () => {
     let copyOfStruct, arg, arg_1, clo, clo_1, clo_2, clo_3, clo_4, clo_5;
     const treshold = 6;
+    const rnd = nonSeeded();
     const rolls = Array.from(toList(rangeDouble(1, 1, 10)));
-    const explosions = RollAux_explode(new Explode(0, [treshold]), 10, rolls);
+    RollAux_explode(new Explode(0, [treshold]), 10, rolls, rnd);
     for (let i = 0; i <= (rolls.length - 1); i++) {
         const before = (i + 1) | 0;
         const current = rolls[i] | 0;

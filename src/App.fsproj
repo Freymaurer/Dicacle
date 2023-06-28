@@ -6,18 +6,22 @@
         <Content Include="styles.css" />
         <Compile Include="Literals.fs" />
         <Compile Include="Extensions.fs" />
-        <Compile Include="DiceRoll.fs" />
-        <Compile Include="Modal.fs" />
-        <Compile Include="Classes.fs" />
-        <Compile Include="DiceIcon.fs" />
-        <Compile Include="DiceParsing.fs" />
         <Compile Include="Routing.fs" />
-        <None Include="index.html" />
+        <Compile Include="Classes.fs" />
+        <Compile Include="Dice\Dice.Icon.fs" />
+        <Compile Include="Dice\Dice.Roll.fs" />
+        <Compile Include="Dice\Dice.Parsing.fs" />
+        <Compile Include="Dice\Dice.HtmlAux.fs" />
+        <Compile Include="LocalStorage.fs" />
+        <Compile Include="States.fs" />
+        <Compile Include="Components\Component.Modal.fs" />
+        <Compile Include="Components\Component.DiceStorageModal.fs" />
         <Compile Include="Components\Component.Navbar.fs" />
         <Compile Include="Pages\Page.Reference.fs" />
         <Compile Include="Pages\Page.Dicacle.fs" />
         <Compile Include="Components.fs" />
         <Compile Include="Main.fs" />
+        <None Include="index.html" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Fable.SimpleJson" Version="3.24.0" />

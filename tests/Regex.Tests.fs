@@ -6,9 +6,9 @@ open Fable.Mocha
 open Expecto
 #endif
 
-open DiceParsing
-open DiceParsing.DiceParsingTypes
-open DiceParsing.DiceParsingAux
+open Dice.Parsing
+open Dice.Parsing.DiceParsingTypes
+open Dice.Parsing.DiceParsingAux
 
 module SetPattern =
 

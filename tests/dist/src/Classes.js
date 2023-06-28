@@ -1,11 +1,6 @@
 import { Record, Union } from "../fable_modules/fable-library.4.0.1/Types.js";
-import { list_type, array_type, record_type, option_type, union_type, int32_type } from "../fable_modules/fable-library.4.0.1/Reflection.js";
-import { nonSeeded } from "../fable_modules/fable-library.4.0.1/Random.js";
-import { sum as sum_2, singleton, collect, delay, toList } from "../fable_modules/fable-library.4.0.1/Seq.js";
-import { rangeDouble } from "../fable_modules/fable-library.4.0.1/Range.js";
-import { comparePrimitives } from "../fable_modules/fable-library.4.0.1/Util.js";
-import { map, defaultArg } from "../fable_modules/fable-library.4.0.1/Option.js";
-import { map as map_1 } from "../fable_modules/fable-library.4.0.1/List.js";
+import { array_type, record_type, option_type, union_type, int32_type } from "../fable_modules/fable-library.4.0.1/Reflection.js";
+import { defaultArg } from "../fable_modules/fable-library.4.0.1/Option.js";
 
 export class KeepDrop extends Union {
     "constructor"(tag, fields) {
@@ -160,133 +155,12 @@ export function Command_ofString_Z721C83C5(str) {
     }
 }
 
-export function rollOnceBy(max, rnd) {
-    return rnd.Next2(1, max + 1);
-}
-
-export function rollOnce(max) {
-    const rnd = nonSeeded();
-    return rnd.Next2(1, max + 1) | 0;
-}
-
-export function rollMultiple(count, max) {
-    const rnd = nonSeeded();
-    return Array.from(toList(delay(() => collect((matchValue) => singleton(rnd.Next2(1, max + 1)), rangeDouble(1, 1, count)))));
-}
-
-export function RollAux_RerollAux_rerollOnce(treshold, roll, diceSize) {
-    return {
-        rerolls: 1,
-        roll: (roll <= treshold) ? rollOnce(diceSize) : roll,
-    };
-}
-
-export function RollAux_RerollAux_rerollInf(treshold, roll, diceSize) {
-    const rnd = nonSeeded();
-    const loop = (tries_mut, currentRoll_mut) => {
-        loop:
-        while (true) {
-            const tries = tries_mut, currentRoll = currentRoll_mut;
-            if (tries >= 100) {
-                return {
-                    rerolls: tries,
-                    roll: currentRoll,
-                };
-            }
-            else if (currentRoll <= treshold) {
-                tries_mut = (tries + 1);
-                currentRoll_mut = rollOnceBy(diceSize, rnd);
-                continue loop;
-            }
-            else {
-                return {
-                    rerolls: tries,
-                    roll: currentRoll,
-                };
-            }
-            break;
-        }
-    };
-    return loop(0, roll);
-}
-
-export function RollAux_ExplodeAux_explodeOnce(treshold, roll, diceSize) {
-    return {
-        explosions: 1,
-        sum: (roll >= treshold) ? (roll + rollOnce(diceSize)) : roll,
-    };
-}
-
-export function RollAux_ExplodeAux_explodeInf(treshold, roll, diceSize) {
-    const rnd = nonSeeded();
-    const loop = (tries_mut, lastRoll_mut, sum_mut) => {
-        loop:
-        while (true) {
-            const tries = tries_mut, lastRoll = lastRoll_mut, sum = sum_mut;
-            if (tries >= 100) {
-                return {
-                    explosions: tries,
-                    sum: sum,
-                };
-            }
-            else if (lastRoll >= treshold) {
-                const nextRoll = rollOnceBy(diceSize, rnd) | 0;
-                tries_mut = (tries + 1);
-                lastRoll_mut = nextRoll;
-                sum_mut = (sum + nextRoll);
-                continue loop;
-            }
-            else {
-                return {
-                    explosions: tries,
-                    sum: sum,
-                };
-            }
-            break;
-        }
-    };
-    return loop(0, roll, roll);
-}
-
-export function RollAux_reroll(t, diceSize, rollArr) {
-    const prepareReroll = (t.tag === 1) ? ((roll_1) => RollAux_RerollAux_rerollInf(t.fields[0], roll_1, diceSize)) : ((roll) => RollAux_RerollAux_rerollOnce(t.fields[0], roll, diceSize));
-    for (let i = 0; i <= (rollArr.length - 1); i++) {
-        const ex = prepareReroll(rollArr[i]);
-        rollArr[i] = (ex.roll | 0);
+export function Command__get_AsString(this$) {
+    if (this$.tag === 1) {
+        return "-";
     }
-}
-
-export function RollAux_explode(t, diceSize, rollArr) {
-    const prepareExplode = (t.tag === 1) ? ((roll_1) => RollAux_ExplodeAux_explodeInf(t.fields[0], roll_1, diceSize)) : ((roll) => RollAux_ExplodeAux_explodeOnce(t.fields[0], roll, diceSize));
-    for (let i = 0; i <= (rollArr.length - 1); i++) {
-        const ex = prepareExplode(rollArr[i]);
-        rollArr[i] = (ex.sum | 0);
-    }
-}
-
-export function RollAux_keepDrop(kdt, rollArr) {
-    rollArr.sort(comparePrimitives);
-    switch (kdt.tag) {
-        case 1: {
-            const n_1 = kdt.fields[0] | 0;
-            const diff_1 = (rollArr.length - n_1) | 0;
-            rollArr.splice(n_1, diff_1);
-            break;
-        }
-        case 2: {
-            const n_2 = kdt.fields[0] | 0;
-            const diff_2 = (rollArr.length - n_2) | 0;
-            rollArr.splice(diff_2, n_2);
-            break;
-        }
-        case 3: {
-            rollArr.splice(0, kdt.fields[0]);
-            break;
-        }
-        default: {
-            const diff = (rollArr.length - kdt.fields[0]) | 0;
-            rollArr.splice(0, diff);
-        }
+    else {
+        return "+";
     }
 }
 
@@ -327,23 +201,6 @@ export function DiceRoll_create_7C3376E1(dice, diceRolled, diceRollSum) {
     return new DiceRoll(dice, diceRolled, diceRollSum);
 }
 
-export function Dice__roll(this$) {
-    const rolls = rollMultiple(this$.DiceCount, this$.DiceSize);
-    map((et) => {
-        RollAux_explode(et, this$.DiceSize, rolls);
-    }, this$.Explode);
-    map((rt) => {
-        RollAux_reroll(rt, this$.DiceSize, rolls);
-    }, this$.Reroll);
-    map((kdt) => {
-        RollAux_keepDrop(kdt, rolls);
-    }, this$.KeepDrop);
-    return DiceRoll_create_7C3376E1(this$, rolls, sum_2(rolls, {
-        GetZero: () => 0,
-        Add: (x, y) => (x + y),
-    }));
-}
-
 export class SetResult extends Record {
     "constructor"(Index, Results) {
         super();
@@ -353,10 +210,10 @@ export class SetResult extends Record {
 }
 
 export function SetResult$reflection() {
-    return record_type("Classes.SetResult", [], SetResult, () => [["Index", int32_type], ["Results", list_type(DiceRoll$reflection())]]);
+    return record_type("Classes.SetResult", [], SetResult, () => [["Index", int32_type], ["Results", array_type(DiceRoll$reflection())]]);
 }
 
-export function SetResult_create_45D5267B(i, res) {
+export function SetResult_create_50178D20(i, res) {
     return new SetResult(i, res);
 }
 
@@ -370,15 +227,10 @@ export class DiceSet extends Record {
 }
 
 export function DiceSet$reflection() {
-    return record_type("Classes.DiceSet", [], DiceSet, () => [["SetCount", int32_type], ["DiceRolls", list_type(Dice$reflection())], ["Results", array_type(SetResult$reflection())]]);
+    return record_type("Classes.DiceSet", [], DiceSet, () => [["SetCount", int32_type], ["DiceRolls", array_type(Dice$reflection())], ["Results", array_type(SetResult$reflection())]]);
 }
 
-export function DiceSet_create_Z1AF666DC(count, diceRolls, results) {
+export function DiceSet_create_63F6707F(count, diceRolls, results) {
     return new DiceSet(count, diceRolls, defaultArg(results, []));
-}
-
-export function DiceSet__roll(this$) {
-    let arg;
-    return new DiceSet(this$.SetCount, this$.DiceRolls, (arg = toList(delay(() => collect((i) => singleton(SetResult_create_45D5267B(i, map_1(Dice__roll, this$.DiceRolls))), rangeDouble(1, 1, this$.SetCount)))), Array.from(arg)));
 }
 

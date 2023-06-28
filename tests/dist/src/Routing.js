@@ -9,7 +9,7 @@ export class Pages extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["Dicacle", "Hello", "Counter", "NotFound"];
+        return ["Dicacle", "Reference", "Counter", "NotFound"];
     }
 }
 
@@ -20,7 +20,7 @@ export function Pages$reflection() {
 export function Pages__get_AsUrl(this$) {
     switch (this$.tag) {
         case 1: {
-            return "#/hello";
+            return "#/reference";
         }
         case 2: {
             return "#/counter";
@@ -45,7 +45,7 @@ export function Pages_ofUrl_7F866359(url) {
                 matchResult = 3;
             }
         }
-        else if (head(url) === "hello") {
+        else if (head(url) === "reference") {
             if (isEmpty(tail(url))) {
                 matchResult = 1;
             }
@@ -92,7 +92,7 @@ export function Pages_ofHash_Z721C83C5(hashStr) {
     else if (hashStr === "#/") {
         matchResult = 0;
     }
-    else if (hashStr === "#/hello") {
+    else if (hashStr === "#/reference") {
         matchResult = 1;
     }
     else if (hashStr === "#/counter") {
@@ -120,7 +120,7 @@ export function Pages_ofHash_Z721C83C5(hashStr) {
 export function Pages__get_PageName(this$) {
     switch (this$.tag) {
         case 1: {
-            return "Hello";
+            return "Reference";
         }
         case 2: {
             return "Counter";

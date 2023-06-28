@@ -1,4 +1,4 @@
-﻿module DiceParsing
+﻿module Dice.Parsing
 
 open System.Text.RegularExpressions
 open Classes

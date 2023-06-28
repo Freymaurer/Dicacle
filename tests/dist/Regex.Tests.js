@@ -4,7 +4,7 @@ import { equals as equals_1, int32ToString, structuralHash, assertEqual } from "
 import { item as item_1, ofArray, contains } from "./fable_modules/fable-library.4.0.1/List.js";
 import { equals, class_type, decimal_type, string_type, float64_type, bool_type, int32_type } from "./fable_modules/fable-library.4.0.1/Reflection.js";
 import { printf, toText } from "./fable_modules/fable-library.4.0.1/String.js";
-import { DiceParsingTypes_PreDiceRoll_create_7C6CFFAF, DiceParsingAux_parseDiceRoll, DiceParsingAux_parseDiceRolls, DiceParsingAux_parseSets } from "./src/DiceParsing.js";
+import { DiceParsingTypes_PreDiceRoll_create_7C6CFFAF, DiceParsingAux_parseDiceRoll, DiceParsingAux_parseDiceRolls, DiceParsingAux_parseSets } from "./src/Dice/Dice.Parsing.js";
 import { Reroll, Explode, KeepDrop, Dice$reflection, Dice_create_458B7DF0, Command, Command$reflection } from "./src/Classes.js";
 import { toString } from "./fable_modules/fable-library.4.0.1/Types.js";
 
