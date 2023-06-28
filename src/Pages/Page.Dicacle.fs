@@ -125,8 +125,18 @@ let private event_rollDice(state:State, setState: State -> unit) =
     setState nextState
 
 let private searchbar(state: State, setState: State -> unit) =
+    let examples = [|
+        "3d6 + 1d11";
+        "2 (1d20+14) (1d20+9)";
+        "2d20k1 + 9"
+        "1d12 + 12 + 2d6"
+    |]
+    let example = 
+        let rnd = new System.Random()
+        examples.[rnd.Next(examples.Length)]
     Bulma.input.text [
         Bulma.input.isLarge
+        prop.placeholder example    
         prop.autoFocus(true)
         prop.onTextChange (fun (input) ->
             let nextState = {
