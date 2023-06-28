@@ -6,6 +6,7 @@
         <Content Include="styles.css" />
         <Compile Include="Literals.fs" />
         <Compile Include="Extensions.fs" />
+        <Compile Include="DiceRoll.fs" />
         <Compile Include="Classes.fs" />
         <Compile Include="DiceIcon.fs" />
         <Compile Include="DiceParsing.fs" />

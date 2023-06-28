@@ -115,8 +115,9 @@ let private rollDice(state:State) =
     let sets = DiceParsing.parseStringToDice(state.Input)
     let arr = ResizeArray(sets)
     Browser.Dom.console.log("[DICE]", arr)
+    let rnd = new System.Random()
     sets
-    |> List.map (fun x -> x.roll())
+    |> List.map (fun x -> x.rollBy(rnd))
     |> ResizeArray
 
 let private event_rollDice(state:State, setState: State -> unit) =
