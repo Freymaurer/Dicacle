@@ -33,18 +33,6 @@ let private navbarEnd =
                 Html.span "GitHub"
             ]
         ]
-        //Bulma.navbarItem.a [
-        //    prop.href Urls.Github_Dicacle
-        //    prop.children [
-        //        Bulma.icon [
-        //            Html.i [
-        //                prop.className "fa-solid fa-mug-saucer fa-lg mr-3"
-        //                prop.style [style.color "gold"]
-        //            ]
-        //        ]
-        //        Html.span "Buy me a Coffee"
-        //    ]
-        //]
     ]
     
 
@@ -60,14 +48,19 @@ let private navbarMenu(isActive:bool) =
 [<ReactComponent>]
 let Main() = 
     let (state, setState) = React.useState(false)
-    let logoUrl = Extensions.StaticFile.import "./../img/logo.png"
+    let logoUrl = Extensions.StaticFile.import "./../img/logo.svg"
     Bulma.navbar [
         Bulma.navbar.isFixedTop
-        Bulma.color.isLink
+        Bulma.color.isBlack
         prop.children [
             Bulma.navbarBrand.div [
                 Bulma.navbarItem.a [
-                    Html.img [prop.src logoUrl; prop.alt "logo"]
+                    Bulma.icon [
+                        Bulma.icon.isMedium
+                        prop.children [
+                            Html.img [prop.src logoUrl; prop.alt "logo"]
+                        ]
+                    ]
                 ]
                 Bulma.navbarBurger [
                     prop.ariaLabel "menu"

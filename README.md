@@ -38,12 +38,15 @@ Reroll:
 - `3d6 r2`: reroll any die equal to 2 or below 2 __once__.
 - `3d6 ir2`: reroll any die equal to 2 or below 2 indefinetly (max 100).
 
-## Requirements
+
+## Development
+
+### Requirements
 
 * [dotnet SDK](https://www.microsoft.com/net/download/core) v6.0 or higher
 * [node.js](https://nodejs.org) v18+ LTS
 
-## Development
+### Setup
 
 Before doing anything, start with installing npm dependencies using `npm install`.
 
@@ -58,6 +61,10 @@ To build the application and make ready for production:
 npm run build
 ```
 This command builds the application and puts the generated files into the `deploy` directory (can be overwritten in webpack.config.js).
+
+### Color-Palette
+
+https://coolors.co/5b19d7-708d81-f4d58d-bf0603-8d0801
 
 ### Tests
 
