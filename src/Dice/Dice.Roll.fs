@@ -120,8 +120,8 @@ type Dice with
 
     member this.rollBy(rnd:Random) =
         let rolls = rollMultipleBy(this.DiceCount, this.DiceSize) rnd
-        this.Explode |> Option.map (fun et -> RollAux.explode(et,this.DiceSize,rolls)) |> ignore
-        this.Reroll |> Option.map (fun rt -> RollAux.reroll(rt,this.DiceSize,rolls)) |> ignore
+        this.Explode |> Option.map (fun et -> RollAux.explode(et,this.DiceSize,rolls) rnd) |> ignore
+        this.Reroll |> Option.map (fun rt -> RollAux.reroll(rt,this.DiceSize,rolls) rnd) |> ignore
         this.KeepDrop |> Option.map (fun kdt -> RollAux.keepDrop(kdt,rolls)) |> ignore
         DiceRoll.create(this, rolls, Seq.sum rolls)
 

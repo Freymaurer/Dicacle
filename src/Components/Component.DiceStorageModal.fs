@@ -5,6 +5,9 @@ open Feliz.Bulma
 open States.DiceStorage
 open LocalStorage
 
+let ID_newName = "dice-storage-new-name"
+let ID_newDiceString = "dice-storage-new-diceString"
+
 let private emptyRow = 
     Html.tr [
         Html.td [
@@ -36,6 +39,7 @@ let private addName(state:States.Dicacle.State, diceStorage: State, setDiceStora
             Bulma.control.div [
                 prop.children [
                     Bulma.input.text [
+                        prop.id ID_newName
                         if state.DiceStorage.ContainsKey diceStorage.Name then Bulma.color.isDanger
                         prop.autoFocus true
                         prop.tabIndex 0
@@ -57,6 +61,7 @@ let private addDiceString(diceStorage: State, setDiceStorage: State -> unit) =
                 Bulma.control.hasIconsLeft
                 prop.children [
                     Bulma.input.text [
+                        prop.id ID_newDiceString
                         prop.tabIndex 0
                         prop.placeholder example
                         prop.onTextChange(fun newInput ->
@@ -76,11 +81,17 @@ let private addDiceString(diceStorage: State, setDiceStorage: State -> unit) =
 open States
 open States.Dicacle
 open LocalStorage
+open Fable.Core.JsInterop
+
 
 let private addToDiceStorage(state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
     state.DiceStorage.Add(storageState.Name, storageState.DiceString)
     setState {state with DiceStorage = state.DiceStorage}
     setStorageState <| DiceStorage.State.init() // This is necessary to refresh ui
+    let ele_newName = Browser.Dom.document.getElementById(ID_newName) :?> Browser.Types.HTMLInputElement
+    let ele_newDiceString = Browser.Dom.document.getElementById(ID_newDiceString) :?> Browser.Types.HTMLInputElement
+    ele_newName.value <- null
+    ele_newDiceString.value <- null
     DiceStorage.write(state.DiceStorage)
 
 let private removeFromDiceStorage(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =

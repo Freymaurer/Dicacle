@@ -27,7 +27,6 @@ let private navbarEnd =
                 Bulma.icon [
                     Html.i [
                         prop.className "fa-brands fa-github fa-xl mr-3"
-                        prop.style [style.color "white"]
                     ]
                 ]
                 Html.span "GitHub"
@@ -50,6 +49,7 @@ let Main() =
     let (state, setState) = React.useState(false)
     let logoUrl = Extensions.StaticFile.import "./../img/logo.svg"
     Bulma.navbar [
+        Bulma.navbar.hasShadow
         Bulma.navbar.isFixedTop
         Bulma.color.isBlack
         prop.children [
