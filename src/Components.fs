@@ -41,6 +41,7 @@ type Components =
             router.children [
                 Html.div [
                     Component.Navbar.Main()
+                    Html.div [prop.id "Test"]
                     Bulma.hero [
                         Bulma.hero.isFullHeightWithNavbar
                         prop.children [

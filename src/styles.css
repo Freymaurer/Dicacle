@@ -24,3 +24,23 @@
 .reference-table tr td:first-child {
     width: 30%
 }
+
+#command-container ul > li {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    background-color:whitesmoke;
+    height: fit-content
+}
+#command-container ul > li code {
+    margin-right: 1rem
+}
+
+#command-container ul > li div {
+    display: flex;
+    align-items: center
+}
+
+
+#command-container ul > li:hover {
+    filter: brightness(90%)
+}
