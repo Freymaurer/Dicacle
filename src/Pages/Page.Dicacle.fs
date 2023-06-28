@@ -167,8 +167,10 @@ let private showSetsResults (state:State) =
             Html.none
         else
             for i in 1 .. state.Results.Count do
-                let set = state.Results.Item (i-1)
+            let set = state.Results.Item (i-1)
+            Bulma.field.div [
                 showSetResult set
+            ]
     ]
 
 let private rollButton(state, setState) =

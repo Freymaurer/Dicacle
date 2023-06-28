@@ -27,7 +27,7 @@ let private navbarEnd =
                 Bulma.icon [
                     Html.i [
                         prop.className "fa-brands fa-github fa-xl mr-3"
-                        prop.style [style.color "#070b13"]
+                        prop.style [style.color "white"]
                     ]
                 ]
                 Html.span "GitHub"
