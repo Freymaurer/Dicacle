@@ -206,3 +206,4 @@ out
 *.fs.js.map
 docs
 /src/fable_modules
+/tests/dist

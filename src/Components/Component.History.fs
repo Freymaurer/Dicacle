@@ -13,9 +13,48 @@ let private showSet (set:DiceSet) =
             Html.li [
                 prop.key (sprintf "set-index-%i" setResult.Index)
                 prop.children [
-                    (setResult.ToHtml())
+                    setResult.ToHtml()
                 ]
             ]
+    ]
+
+let private emptyDefault = 
+    Bulma.field.div [
+        Bulma.notification [
+            prop.className "mb-1"
+            prop.text "History is empty"
+        ]
+    ]
+
+let private displayInputFromSet (set:DiceSet, state: Dicacle.State, setState: Dicacle.State -> unit) =
+    Html.div [
+        prop.className "mb-1"
+        prop.children [
+            Html.code set.Input
+            Bulma.button.button [
+                prop.onClick(fun _ -> 
+                    let nextState = {state with Input=set.Input}
+                    setState nextState
+                )
+                Bulma.button.isSmall
+                prop.className "is-ghost"
+                prop.style [style.float'.right]
+                prop.children [ Bulma.icon [Html.i [prop.className "fa-regular fa-paste"] ]]
+            ]
+        ]
+    ]
+    
+
+let private clearHistoryButton(state: Dicacle.State, setState) =
+    Bulma.button.button [
+        prop.onClick(fun _ ->
+            let nextState = {state with History = ResizeArray()}
+            setState nextState
+            LocalStorage.History.write nextState.History
+        )
+        prop.className "is-danger"
+        Bulma.button.isFullWidth
+        prop.text "Clear History"
     ]
 
 let private showSets (state:Dicacle.State, setState: Dicacle.State -> unit) =
@@ -23,28 +62,14 @@ let private showSets (state:Dicacle.State, setState: Dicacle.State -> unit) =
         prop.id "history-container"
         prop.children [
             if state.History.Count = 0 then
-                Html.none
+                emptyDefault
             else
                 for set in state.History do
                     Bulma.field.div [
-                        Html.div [
-                            prop.className "mb-1"
-                            prop.children [
-                                Html.code set.Input
-                                Bulma.button.button [
-                                    prop.onClick(fun _ -> 
-                                        let nextState = {state with Input=set.Input}
-                                        setState nextState
-                                    )
-                                    Bulma.button.isSmall
-                                    prop.className "is-ghost"
-                                    prop.style [style.float'.right]
-                                    prop.children [ Bulma.icon [Html.i [prop.className "fa-regular fa-paste"] ]]
-                                ]
-                            ]
-                        ]
+                        displayInputFromSet(set, state, setState)
                         showSet set
                     ]
+                clearHistoryButton(state, setState)
         ]
     ]
 
@@ -71,6 +96,9 @@ let Main(diceState: Dicacle.State, setDicacleState: Dicacle.State -> unit) =
     let state, setState = React.useState(State.init)
     Html.div [
         prop.id ElementId.DiceRoller_History
+        prop.style [
+            if not state.IsActive then style.minWidth.unset
+        ]
         prop.children [
             toggleButton(state, setState)
             Html.div [ 

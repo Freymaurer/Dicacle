@@ -62,16 +62,19 @@
 #dice-roller-history {
     position: relative;
     overflow: hidden;
-    max-width: 30%
+    max-width: 40%;
+    max-height: calc(100vh - 3.25rem);
+    min-width: 300px
 }
 
 #dice-roller-history-inner {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     display: flex;
-    max-height: 100%;
+    height: 100%;
     overflow: auto;
     flex-direction: column-reverse;
+    border-left: 0.5px solid lightgrey
 }
 
 #history-container > .field:not(:last-child) {
@@ -80,27 +83,35 @@
 }
 
 #dice-roller-history-toggle-button {
+    font-size: 1.25rem;
     position: fixed;
     right: 0;
-    z-index: 30
+    margin-top: 2px;
+    z-index: 31
+}
+
+@media screen and (max-width: 1228px) {
+
+    #dice-roller-history {
+        max-width: 30%;
+    }
 }
 
 @media screen and (max-width: 481px) {
-
-    #dice-roller-history-toggle-button {
-        font-size: 1.25rem
-    }
 
     #dice-roller-history {
         position: absolute;
         left: 0;
         max-width: unset;
+        min-width: unset;
+        width: 100%;
         z-index: 10;
-        background-color: whitesmoke;
+        background-color: white;
     }
 
     #dice-roller-history-inner {
-        max-height: calc(100vh - 3.25rem);
+        height: calc(100vh - 3.25rem);
+        padding-bottom: 1rem
     }
 
     #dice-roller-button, #dice-roller-dice-storage {
