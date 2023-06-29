@@ -176,26 +176,35 @@ let private rollButton(state, setState) =
 [<ReactComponent>]
 let Main() = 
     let (state, setState) = React.useState(State.init)
-    Bulma.container [
-        prop.className "is-max-desktop"
+    Html.div [
+        prop.className "is-flex is-flex-grow-1"
+        prop.style [style.maxHeight (length.percent 100); style.overflow.hidden]
         prop.children [
-            Bulma.field.div [
-                Bulma.field.hasAddons
-                prop.children [
-                    Bulma.control.div [ 
-                        storageButton(state, setState)
-                    ]
-                    Bulma.control.div [
-                        Bulma.control.isExpanded
-                        prop.children [
-                            Searchbar(state, setState)
+            Bulma.heroBody [
+                Bulma.container [
+                    prop.className "is-max-desktop"
+                    prop.children [
+                        Bulma.field.div [
+                            Bulma.field.hasAddons
+                            prop.children [
+                                Bulma.control.div [ 
+                                    storageButton(state, setState)
+                                ]
+                                Bulma.control.div [
+                                    Bulma.control.isExpanded
+                                    prop.children [
+                                        Searchbar(state, setState)
+                                    ]
+                                ]
+                                Bulma.control.div [ 
+                                    rollButton(state, setState)
+                                ]
+                            ]
                         ]
-                    ]
-                    Bulma.control.div [ 
-                        rollButton(state, setState)
+                        showSetsResults state
                     ]
                 ]
             ]
-            showSetsResults state
+            Component.History.Main(state, setState)
         ]
     ]

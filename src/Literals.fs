@@ -12,6 +12,15 @@ module ElementId =
     [<Literal>]
     let DiceRoller_DiceStorage = "dice-roller-dice-storage"
 
+    [<Literal>]
+    let DiceRoller_History = "dice-roller-history"
+
+    [<Literal>]
+    let DiceRoller_HistoryInner = "dice-roller-history-inner"
+
+    [<Literal>]
+    let DiceRoller_HistoryButton = "dice-roller-history-toggle-button"
+
 [<RequireQualifiedAccess>]
 module Urls =
 

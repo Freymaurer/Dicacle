@@ -14,6 +14,7 @@
         <Compile Include="Dice\Dice.HtmlAux.fs" />
         <Compile Include="LocalStorage.fs" />
         <Compile Include="States.fs" />
+        <Compile Include="Components\Component.History.fs" />
         <Compile Include="Components\Component.Modal.fs" />
         <Compile Include="Components\Component.DiceStorageModal.fs" />
         <Compile Include="Components\Component.Footer.fs" />
@@ -29,7 +30,6 @@
         <PackageReference Include="Feliz" Version="2.6.0" />
         <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
         <PackageReference Include="Feliz.Router" Version="4.0.0" />
-        <PackageReference Include="Zanaptak.TypedCssClasses" Version="1.0.0" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Update="FSharp.Core" Version="[6.0.7]" />

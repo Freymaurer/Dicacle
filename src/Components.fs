@@ -4,27 +4,9 @@ open Feliz
 open Feliz.Bulma
 open Feliz.Router
 
-open Zanaptak.TypedCssClasses
-
-type Icon = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css", Naming.PascalCase>
-
 type Components =
 
     static member Reference() = Page.Reference.Main()
-
-    /// <summary>
-    /// A stateful React component that maintains a counter
-    /// </summary>
-    [<ReactComponent>]
-    static member Counter() =
-        let (count, setCount) = React.useState(0)
-        Html.div [
-            Html.h1 count
-            Html.button [
-                prop.onClick (fun _ -> setCount(count + 1))
-                prop.text "Increment"
-            ]
-        ]
 
     static member Dicacle() = Page.Dicacle.Main()
         
@@ -43,13 +25,10 @@ type Components =
                     Bulma.hero [
                         Bulma.hero.isFullHeightWithNavbar
                         prop.children [
-                            Bulma.heroBody [
-                                match currentPage with
-                                | Routing.Dicacle   -> Components.Dicacle()
-                                | Routing.Reference -> Components.Reference()
-                                | Routing.Counter   -> Components.Counter()
-                                | Routing.NotFound  -> Html.h1 "Not found"
-                            ]
+                            match currentPage with
+                            | Routing.Dicacle   -> Components.Dicacle()
+                            | Routing.Reference -> Components.Reference()
+                            | Routing.NotFound  -> Html.h1 "404: Page not found"
                             Component.Footer.Main
                         ]
                     ]

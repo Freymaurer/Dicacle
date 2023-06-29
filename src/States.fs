@@ -46,3 +46,13 @@ module Dicacle =
                     recent.Add(input)
 
             recent
+
+
+module History =
+
+    type State = {
+        IsActive: bool
+    } with
+        static member init() = {
+            IsActive = false
+        }

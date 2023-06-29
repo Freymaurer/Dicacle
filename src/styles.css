@@ -1,3 +1,11 @@
+.hero {
+    max-height: calc(100vh - 3.25rem)
+}
+
+.hero-body {
+    flex-shrink: 1
+}
+
 .dice-result-container span {
     font-size: 1rem;
     display: flex;
@@ -22,7 +30,7 @@
 }
 
 .reference-table tr td:first-child {
-    width: 30%
+    width: 30%;
 }
 
 #command-container ul > li {
@@ -40,7 +48,6 @@
     align-items: center
 }
 
-
 #command-container ul > li:hover {
     filter: brightness(90%)
 }
@@ -52,7 +59,50 @@
     content: "Roll!";
 }
 
+#dice-roller-history {
+    position: relative;
+    overflow: hidden;
+    max-width: 30%
+}
+
+#dice-roller-history-inner {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    display: flex;
+    max-height: 100%;
+    overflow: auto;
+    flex-direction: column-reverse;
+}
+
+#history-container > .field:not(:last-child) {
+    border-bottom: 1px solid black;
+    padding-bottom: 0.2rem
+}
+
+#dice-roller-history-toggle-button {
+    position: fixed;
+    right: 0;
+    z-index: 30
+}
+
 @media screen and (max-width: 481px) {
+
+    #dice-roller-history-toggle-button {
+        font-size: 1.25rem
+    }
+
+    #dice-roller-history {
+        position: absolute;
+        left: 0;
+        max-width: unset;
+        z-index: 10;
+        background-color: whitesmoke;
+    }
+
+    #dice-roller-history-inner {
+        max-height: calc(100vh - 3.25rem);
+    }
+
     #dice-roller-button, #dice-roller-dice-storage {
         padding: 0.5em !important
     }

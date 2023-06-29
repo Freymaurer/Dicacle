@@ -158,13 +158,15 @@ let private section_sets =
 
 [<ReactComponent>]
 let Main() =
-    Bulma.container [
-        prop.style [style.alignSelf.baseline]
-        prop.children [
-            section_basic
-            section_keepdrop
-            section_explode
-            section_reroll
-            section_sets
+    Bulma.heroBody [
+        Bulma.container [
+            prop.style [style.alignSelf.baseline]
+            prop.children [
+                section_basic
+                section_keepdrop
+                section_explode
+                section_reroll
+                section_sets
+            ]
         ]
     ]
