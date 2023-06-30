@@ -83,6 +83,16 @@ open States.Dicacle
 open LocalStorage
 open Fable.Core.JsInterop
 
+let private addToQuickAccess(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
+    let nextState = {state with QuickAccess = state.QuickAccess.Add(id)}
+    setState nextState
+    QuickAccess.write(nextState.QuickAccess)
+
+let private removeFromQuickAccess(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
+    let nextState = {state with QuickAccess = state.QuickAccess.Remove(id)}
+    //setStorageState <| storageState.Refresh() // This is necessary to refresh ui
+    setState nextState
+    QuickAccess.write(nextState.QuickAccess)
 
 let private addToDiceStorage(state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
     state.DiceStorage.Add(storageState.Name, storageState.DiceString)
@@ -97,8 +107,22 @@ let private addToDiceStorage(state:State, setState:State -> unit, storageState: 
 let private removeFromDiceStorage(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
     ignore <| state.DiceStorage.Remove(id)
     setState {state with DiceStorage = state.DiceStorage}
-    setStorageState <| DiceStorage.State.init() // This is necessary to refresh ui
     DiceStorage.write(state.DiceStorage)
+    removeFromQuickAccess(id,state,setState,storageState,setStorageState)
+
+let quickAccessToggleButton(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) = 
+    let defaultChecked = state.QuickAccess.Contains id
+    Bulma.label [
+        Bulma.input.checkbox [
+            prop.defaultChecked defaultChecked
+            prop.onChange (fun (isAdd:bool) -> 
+                if isAdd then 
+                    addToQuickAccess(id,state,setState,storageState,setStorageState)
+                else
+                    removeFromQuickAccess(id,state,setState,storageState,setStorageState)
+            )
+        ]
+    ]
 
 let private storedDice(state:State, setState: State-> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) = 
     let rmvButton(id:string) = Bulma.delete [
@@ -108,6 +132,14 @@ let private storedDice(state:State, setState: State-> unit, storageState: DiceSt
         )
     ]
     Bulma.table [
+        Html.thead [
+            Html.tr [ 
+                Html.th "Shortcut"
+                Html.th "Dice"
+                Html.th "Quick Access"
+                Html.th [ ]
+            ]
+        ]
         Html.tbody [
             //if storageState.Current.Count > 0 then
             if state.DiceStorage.Count > 0 then
@@ -118,6 +150,7 @@ let private storedDice(state:State, setState: State-> unit, storageState: DiceSt
                         prop.children [
                             Html.td [prop.key (sprintf "Stored-Dice-Name-%s" id); prop.children (Html.code ("/"+id))]
                             Html.td [prop.key (sprintf "Stored-Dice-diceString-%s" id); prop.text diceString]
+                            Html.td [prop.key (sprintf "Stored-Dice-quick-access-%s" id); prop.children (quickAccessToggleButton(id, state, setState, storageState, setStorageState)) ]
                             Html.td [prop.key (sprintf "Stored-Dice-remove-%s" id); prop.children (rmvButton(id))]
                         ]
                     ]
@@ -153,7 +186,7 @@ let private addNewToStorageElement(state:State, setState: State-> unit, storageS
 
 [<ReactComponent>]
 let Main(state:State) (setState: State-> unit) (rmv: _ -> unit) =
-    let (diceStorage, setDiceStorage) = React.useState(DiceStorage.State.init)
+    let (diceStorage, setDiceStorage) = React.useState(DiceStorage.State.init())
     let rmv = fun _ ->
         rmv()
         let ele = Browser.Dom.document.getElementById(ElementId.DiceRoller_Input)

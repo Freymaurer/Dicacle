@@ -7,26 +7,27 @@ open Dice.Roll
 open Dice.HtmlAux
 open States.Dicacle
 
-let private event_rollDice(state:State, setState: State -> unit) =
-    let input = if state.Input.StartsWith("/") then state.DiceStorage.[state.KeyFromInput] else state.Input
+let private event_rollDiceFromString(input:string, state:State, setState: State -> unit) =
+    let input = if input.StartsWith("/") then state.DiceStorage.[input.[1..]] else input
     let sets = Dice.Parsing.parseStringToDice(input)
-    let arr = ResizeArray(sets)
-    Browser.Dom.console.log("[DICE]", arr)
     let rnd = new System.Random()
     let nextDiceSets = 
         sets
         |> List.map (fun x -> x.rollBy(rnd))
         |> ResizeArray
+    let diceSets = DiceSets.create(input, nextDiceSets)
+    Browser.Dom.console.log("[DICE]", diceSets)
     let historySize = 200
     let nextHistory =
-        for set in nextDiceSets do
-            state.History.Add(set)
-            if state.History.Count >= historySize then
-                state.History.RemoveRange(historySize,state.History.Count - historySize)
+        state.History.Add(diceSets)
+        if state.History.Count >= historySize then
+            state.History.RemoveRange(historySize,state.History.Count - historySize)
         LocalStorage.History.write state.History
         state.History
-    let nextState = { state with Results = nextDiceSets; History = nextHistory }
+    let nextState = { state with Input = input;Results = Some diceSets; History = nextHistory }
     setState nextState
+
+let private event_rollDice(state:State, setState: State -> unit) = event_rollDiceFromString (state.Input, state, setState)
 
 let private updateUIState (state: int option, cmds: 'a [], increase:bool) =
     Option.defaultValue -1 state
@@ -138,25 +139,30 @@ let private showSetResult (set:DiceSet) =
 
 let private showSetsResults (state:State) =
     Bulma.field.div [
-        if state.Results.Count = 0 then
+        if state.Results.IsNone then
             Html.none
         else
-            for set in state.Results do
+            for set in state.Results.Value.DiceSets do
                 Bulma.field.div [
                     showSetResult set
                 ]
     ]
 
-let private storageButton(state, setState) =
-    Bulma.button.button [
-        Bulma.button.isLarge
-        prop.id ElementId.DiceRoller_DiceStorage
-        prop.title "Manage stored dice"
-        prop.role "button"
-        prop.text "+"
-        prop.onClick(fun _ ->
-            Component.Modal.renderModal (Component.DiceStorageModal.Main state setState)
-        )
+[<ReactComponent>]
+let private StorageButton(state, setState) =
+    let isActive, setIsActive = React.useState(false)
+    Html.div [
+        if isActive then Component.DiceStorageModal.Main state setState (fun _ -> setIsActive false)
+        Bulma.button.button [
+            Bulma.button.isLarge
+            prop.id ElementId.DiceRoller_DiceStorage
+            prop.title "Manage stored dice"
+            prop.role "button"
+            prop.text "+"
+            prop.onClick(fun _ ->
+                setIsActive (not isActive)
+            )
+        ]
     ]
 
 let private rollButton(state, setState) =
@@ -184,11 +190,12 @@ let Main() =
                 Bulma.container [
                     prop.className "is-max-desktop"
                     prop.children [
+                        Bulma.field.div [Component.QuickAccess.Main(state.QuickAccess, fun input -> event_rollDiceFromString(input,state,setState))]
                         Bulma.field.div [
                             Bulma.field.hasAddons
                             prop.children [
                                 Bulma.control.div [ 
-                                    storageButton(state, setState)
+                                    StorageButton(state, setState)
                                 ]
                                 Bulma.control.div [
                                     Bulma.control.isExpanded

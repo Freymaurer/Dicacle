@@ -6,11 +6,15 @@
     flex-shrink: 1
 }
 
+.dice-result-container {
+    width: 100%
+}
+
 .dice-result-container span {
     font-size: 1rem;
     display: flex;
     align-items: center;
-    flex-wrap:wrap
+    flex-wrap: wrap;
 }
 
 .dice-result-subsum-container > span:not(:last-child) {

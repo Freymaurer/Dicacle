@@ -26,7 +26,7 @@ let private emptyDefault =
         ]
     ]
 
-let private displayInputFromSet (set:DiceSet, state: Dicacle.State, setState: Dicacle.State -> unit) =
+let private displayInputFromSet (set:DiceSets, state: Dicacle.State, setState: Dicacle.State -> unit) =
     Html.div [
         prop.className "mb-1"
         prop.children [
@@ -64,10 +64,11 @@ let private showSets (state:Dicacle.State, setState: Dicacle.State -> unit) =
             if state.History.Count = 0 then
                 emptyDefault
             else
-                for set in state.History do
+                for sets in state.History do
                     Bulma.field.div [
-                        displayInputFromSet(set, state, setState)
-                        showSet set
+                        displayInputFromSet(sets, state, setState)
+                        for set in sets.DiceSets do
+                            showSet set
                     ]
                 clearHistoryButton(state, setState)
         ]

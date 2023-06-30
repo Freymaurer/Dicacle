@@ -19,22 +19,28 @@ module Dicacle =
 
     type State = {
         Input: string
-        Results: ResizeArray<DiceSet>
+        Results: DiceSets option
         DiceStorage: System.Collections.Generic.Dictionary<string, string>
-        History: ResizeArray<DiceSet>
+        History: ResizeArray<DiceSets>
+        // Must use mutable to allow for ui changes in subcomponent.
+        QuickAccess: Set<string>
     } with
         static member init() = 
             let diceStorage = 
                 DiceStorage.load() |> Option.defaultValue (System.Collections.Generic.Dictionary<string, string>())
             let history =
                 History.load() |> Option.defaultValue (ResizeArray())
+            let quickAccess =
+                QuickAccess.load() 
+                |> Option.defaultValue Set.empty
+                |> Set.filter(fun key -> diceStorage.ContainsKey(key))
             {
                 Input = ""
-                Results = ResizeArray()
+                Results = None
                 DiceStorage = diceStorage
                 History = history
+                QuickAccess = quickAccess
             }
-
         member this.KeyFromInput = if this.Input <> "" then this.Input.Remove(0,1) else ""
         member this.GetRecent = 
             let recent = ResizeArray<string>()
@@ -46,7 +52,6 @@ module Dicacle =
                     recent.Add(input)
 
             recent
-
 
 module History =
 

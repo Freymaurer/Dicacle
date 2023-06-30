@@ -135,5 +135,5 @@ let parseStringToDice(input:string) =
     sets
     |> List.map (fun set ->
         let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie)) |> ResizeArray
-        DiceSet.create(input, set.setCount, dice).roll()
+        DiceSet.create(set.setCount, dice).roll()
     )
