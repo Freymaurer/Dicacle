@@ -5,8 +5,8 @@ open Feliz.Bulma
 open States.DiceStorage
 open LocalStorage
 
-let ID_newName = "dice-storage-new-name"
-let ID_newDiceString = "dice-storage-new-diceString"
+let private ID_newName = "dice-storage-new-name"
+let private ID_newDiceString = "dice-storage-new-diceString"
 
 let private emptyRow = 
     Html.tr [
@@ -37,6 +37,7 @@ let private addName(state:States.Dicacle.State, diceStorage: State, setDiceStora
                 ]
             ]
             Bulma.control.div [
+                prop.className "is-flex-grow-1"
                 prop.children [
                     Bulma.input.text [
                         prop.id ID_newName
@@ -110,7 +111,7 @@ let private removeFromDiceStorage(id:string, state:State, setState:State -> unit
     DiceStorage.write(state.DiceStorage)
     removeFromQuickAccess(id,state,setState,storageState,setStorageState)
 
-let quickAccessToggleButton(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) = 
+let private quickAccessToggleButton(id:string, state:State, setState:State -> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) = 
     let defaultChecked = state.QuickAccess.Contains id
     Bulma.label [
         Bulma.input.checkbox [
@@ -132,46 +133,54 @@ let private storedDice(state:State, setState: State-> unit, storageState: DiceSt
         )
     ]
     Bulma.table [
-        Html.thead [
-            Html.tr [ 
-                Html.th "Shortcut"
-                Html.th "Dice"
-                Html.th "Quick Access"
-                Html.th [ ]
+        if state.DiceStorage.Count > 0 then
+            Html.thead [
+                Html.tr [ 
+                    Html.th "Shortcut"
+                    Html.th "Dice"
+                    Html.th "Quick Access"
+                    Html.th [ ]
+                ]
             ]
-        ]
-        Html.tbody [
-            //if storageState.Current.Count > 0 then
-            if state.DiceStorage.Count > 0 then
-                //for KeyValue(id, diceString) in storageState.Current do
-                for KeyValue(id, diceString) in state.DiceStorage do
-                    Html.tr [
-                        prop.key (sprintf "Stored-Dice-%s" id)
-                        prop.children [
-                            Html.td [prop.key (sprintf "Stored-Dice-Name-%s" id); prop.children (Html.code ("/"+id))]
-                            Html.td [prop.key (sprintf "Stored-Dice-diceString-%s" id); prop.text diceString]
-                            Html.td [prop.key (sprintf "Stored-Dice-quick-access-%s" id); prop.children (quickAccessToggleButton(id, state, setState, storageState, setStorageState)) ]
-                            Html.td [prop.key (sprintf "Stored-Dice-remove-%s" id); prop.children (rmvButton(id))]
+            Html.tbody [
+                //if storageState.Current.Count > 0 then
+                    //for KeyValue(id, diceString) in storageState.Current do
+                    for KeyValue(id, diceString) in state.DiceStorage do
+                        Html.tr [
+                            prop.key (sprintf "Stored-Dice-%s" id)
+                            prop.children [
+                                Html.td [prop.key (sprintf "Stored-Dice-Name-%s" id); prop.children (Html.code ("/"+id))]
+                                Html.td [prop.key (sprintf "Stored-Dice-diceString-%s" id); prop.text diceString]
+                                Html.td [prop.key (sprintf "Stored-Dice-quick-access-%s" id); prop.children (quickAccessToggleButton(id, state, setState, storageState, setStorageState)) ]
+                                Html.td [prop.key (sprintf "Stored-Dice-remove-%s" id); prop.children (rmvButton(id))]
+                            ]
                         ]
-                    ]
-            else
+            ]
+        else
+            Html.tbody [
                 emptyRow
-        ]
+            ]
     ]
 
 let private addNewToStorageElement(state:State, setState: State-> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
     Bulma.columns [
         Bulma.column (addName(state,storageState,setStorageState))
         Bulma.column (addDiceString(storageState,setStorageState))
-        Bulma.column (Bulma.field.div [
+        Bulma.column [
+            Bulma.column.isNarrow
+            //prop.style [style.alignItems.end']
             prop.children [
                 Bulma.control.div [
+                    prop.className "is-flex is-justify-content-end"
                     prop.children [
                         Bulma.button.button [
-                            let valid = storageState.Name <> "" && storageState.DiceString <> "" && (state.DiceStorage.ContainsKey storageState.Name |> not)
-                            prop.style [style.float'.right]
-                            prop.text "+"
+                            let isNew = state.DiceStorage.ContainsKey storageState.Name |> not
+                            let valid = storageState.Name <> "" && storageState.DiceString <> "" && isNew
+                            let text = if storageState.Name = "fireball" && isNew then "🔥" else "+"
+                            prop.text text
+                            prop.role "button"
                             if not valid then Bulma.button.isStatic
+                            prop.style [style.borderRadius (length.px 4)]
                             prop.tabIndex 0
                             prop.onClick(fun _ -> 
                                 if valid then
@@ -181,12 +190,12 @@ let private addNewToStorageElement(state:State, setState: State-> unit, storageS
                     ]
                 ]
             ]
-        ])
+        ]
     ]
 
 [<ReactComponent>]
 let Main(state:State) (setState: State-> unit) (rmv: _ -> unit) =
-    let (diceStorage, setDiceStorage) = React.useState(DiceStorage.State.init())
+    let (diceStorage, setDiceStorage) = React.useState(DiceStorage.State.init)
     let rmv = fun _ ->
         rmv()
         let ele = Browser.Dom.document.getElementById(ElementId.DiceRoller_Input)
