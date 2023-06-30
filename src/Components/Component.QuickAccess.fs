@@ -6,9 +6,10 @@ open Feliz.Bulma
 open Classes
 open States.Dicacle
 
-let private tag (id, activate) =
+let private tag (id, input, activate) =
     let id = "/" + id
     Bulma.tag [
+        prop.title input
         prop.style [style.cursor.pointer]
         prop.onClick (fun _ -> activate id)
         prop.children [
@@ -19,9 +20,9 @@ let private tag (id, activate) =
         ]
     ]
 
-let Main(state:Set<string>, activate) =
+let Main(state: States.Dicacle.State, activate) =
     Bulma.tags [
-        for qa in state do
-            tag (qa, activate)
+        for qa in state.QuickAccess do
+            tag (qa, state.DiceStorage.[qa], activate)
     ]
 

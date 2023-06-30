@@ -8,15 +8,16 @@ open Dice.HtmlAux
 open States.Dicacle
 
 let private event_rollDiceFromString(input:string, state:State, setState: State -> unit) =
-    let input = if input.StartsWith("/") then state.DiceStorage.[input.[1..]] else input
-    let sets = Dice.Parsing.parseStringToDice(input)
-    let rnd = new System.Random()
-    let nextDiceSets = 
-        sets
-        |> List.map (fun x -> x.rollBy(rnd))
-        |> ResizeArray
-    let diceSets = DiceSets.create(input, nextDiceSets)
+    let parsedInput = if input.StartsWith("/") then state.DiceStorage.[input.[1..]] else input
+    let diceSets = Dice.Parsing.diceAndRoll(parsedInput)
+    //let rnd = new System.Random()
+    //let nextDiceSets = 
+    //    sets
+    //    |> List.map (fun x -> x.rollBy(rnd))
+    //    |> ResizeArray
+    //let diceSets = DiceSets.create(input, nextDiceSets)
     Browser.Dom.console.log("[DICE]", diceSets)
+    //Component.Shake.DiceShake(diceSets)
     let historySize = 200
     let nextHistory =
         state.History.Add(diceSets)
@@ -24,10 +25,16 @@ let private event_rollDiceFromString(input:string, state:State, setState: State 
             state.History.RemoveRange(historySize,state.History.Count - historySize)
         LocalStorage.History.write state.History
         state.History
-    let nextState = { state with Input = input;Results = Some diceSets; History = nextHistory }
+    let nextState = { 
+        state with 
+            Results = Some diceSets; 
+            History = nextHistory 
+            Input = input
+    }
     setState nextState
 
-let private event_rollDice(state:State, setState: State -> unit) = event_rollDiceFromString (state.Input, state, setState)
+let private event_rollDice(state:State, setState: State -> unit) = 
+    event_rollDiceFromString (state.Input, state, setState)
 
 let private updateUIState (state: int option, cmds: 'a [], increase:bool) =
     Option.defaultValue -1 state
@@ -154,6 +161,7 @@ let private StorageButton(state, setState) =
     Html.div [
         if isActive then Component.DiceStorageModal.Main state setState (fun _ -> setIsActive false)
         Bulma.button.button [
+            prop.style [style.zIndex 1]
             Bulma.button.isLarge
             prop.id ElementId.DiceRoller_DiceStorage
             prop.title "Manage stored dice"
@@ -179,6 +187,8 @@ let private rollButton(state, setState) =
         ])
     ]
 
+open Fable.Core.JsInterop
+
 [<ReactComponent>]
 let Main() = 
     let (state, setState) = React.useState(State.init)
@@ -190,8 +200,13 @@ let Main() =
                 Bulma.container [
                     prop.className "is-max-desktop"
                     prop.children [
-                        Bulma.field.div [Component.QuickAccess.Main(state.QuickAccess, fun input -> event_rollDiceFromString(input,state,setState))]
+                        Bulma.field.div [Component.QuickAccess.Main(state, fun input -> event_rollDiceFromString(input,state,setState))]
                         Bulma.field.div [
+                            prop.id ElementId.DiceRoller_Container
+                            prop.onAnimationEnd(fun _ ->
+                                let ele = Browser.Dom.document.getElementById(ElementId.DiceRoller_Container)
+                                ele?style?animation <- "initial"
+                            )
                             Bulma.field.hasAddons
                             prop.children [
                                 Bulma.control.div [ 

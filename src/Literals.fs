@@ -4,6 +4,9 @@ module Literals
 module ElementId =
 
     [<Literal>]
+    let DiceRoller_Container = "dice-roller-container"
+
+    [<Literal>]
     let DiceRoller_Input = "dice-roller-input"
 
     [<Literal>]

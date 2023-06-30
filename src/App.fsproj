@@ -14,6 +14,7 @@
         <Compile Include="Dice\Dice.HtmlAux.fs" />
         <Compile Include="LocalStorage.fs" />
         <Compile Include="States.fs" />
+        <Compile Include="Components\Component.Shake.fs" />
         <Compile Include="Components\Component.QuickAccess.fs" />
         <Compile Include="Components\Component.History.fs" />
         <Compile Include="Components\Component.DiceStorageModal.fs" />

@@ -130,10 +130,14 @@ module DiceParsingAux =
 
 open DiceParsingAux
 
-let parseStringToDice(input:string) =
+/// Main parsing function, parses string to dice and rolls.
+let diceAndRoll(input:string) =
+    let rnd = new System.Random()
     let sets = parseSets input
-    sets
-    |> List.map (fun set ->
-        let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie)) |> ResizeArray
-        DiceSet.create(set.setCount, dice).roll()
-    )
+    let setList = 
+        sets
+        |> List.map (fun set ->
+            let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie)) |> ResizeArray
+            DiceSet.create(set.setCount, dice).rollBy(rnd)
+        )
+    DiceSets.create(input, ResizeArray(setList))
