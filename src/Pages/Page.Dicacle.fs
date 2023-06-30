@@ -51,7 +51,7 @@ let private Searchbar(state: State, setState: State -> unit) =
         let init : int option = None
         React.useState(init)
     Html.div [
-        prop.style [style.display.flex; style.position.relative]
+        prop.style [style.display.flex; style.position.relative; style.zIndex 1]
         prop.children [
             Bulma.input.text [
                 Bulma.input.isLarge
@@ -204,6 +204,15 @@ let Main() =
                                     ]
                                 ]
                                 Bulma.control.div [ 
+                                    // alternative, not tested: https://codepen.io/kylewetton/pen/NeRbvz
+                                    if state.Input.ToLower() = "/fireball" then
+                                        Html.div [
+                                            prop.style [style.position.fixedRelativeToWindow]
+                                            prop.children [
+                                                Html.div [prop.className "glow"]
+                                                Html.div [prop.className "flame"]
+                                            ]
+                                        ]
                                     rollButton(state, setState)
                                 ]
                             ]
