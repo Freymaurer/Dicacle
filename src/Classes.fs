@@ -122,9 +122,13 @@ type DiceSet = {
     
 type DiceSets = {
     Input: string
+    Time: System.DateTime
     DiceSets: ResizeArray<DiceSet>
 } with
-    static member create(input:string, sets) = {
-        Input = input
-        DiceSets = sets
-    }
+    static member create(input:string, sets) = 
+        let n = System.DateTime.Now
+        {
+            Input = input
+            Time = n
+            DiceSets = sets
+        }

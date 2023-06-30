@@ -26,14 +26,14 @@ let private emptyDefault =
         ]
     ]
 
-let private displayInputFromSet (set:DiceSets, state: Dicacle.State, setState: Dicacle.State -> unit) =
+let private displayInputFromSets (sets:DiceSets, state: Dicacle.State, setState: Dicacle.State -> unit) =
     Html.div [
         prop.className "mb-1"
         prop.children [
-            Html.code set.Input
+            Html.code sets.Input
             Bulma.button.button [
                 prop.onClick(fun _ -> 
-                    let nextState = {state with Input=set.Input}
+                    let nextState = {state with Input=sets.Input}
                     setState nextState
                 )
                 Bulma.button.isSmall
@@ -44,6 +44,15 @@ let private displayInputFromSet (set:DiceSets, state: Dicacle.State, setState: D
         ]
     ]
     
+let private displayDateTimeFromSets(sets:DiceSets) =
+    Html.div [
+        prop.className "mb-1"
+        prop.children [
+            Bulma.help [ 
+                prop.text (sets.Time.ToLongDateString() + " " + sets.Time.ToLongTimeString())
+            ]
+        ]
+    ]
 
 let private clearHistoryButton(state: Dicacle.State, setState) =
     Bulma.button.button [
@@ -66,7 +75,8 @@ let private showSets (state:Dicacle.State, setState: Dicacle.State -> unit) =
             else
                 for sets in state.History do
                     Bulma.field.div [
-                        displayInputFromSet(sets, state, setState)
+                        displayDateTimeFromSets(sets)
+                        displayInputFromSets(sets, state, setState)
                         for set in sets.DiceSets do
                             showSet set
                     ]
