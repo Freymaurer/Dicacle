@@ -104,6 +104,10 @@
 @media screen and (max-width: 481px),
     screen and (max-height: 481px) {
 
+    .hero-body {
+        align-items: flex-start !important
+    }
+
     #dice-roller-history {
         position: absolute;
         left: 0;
