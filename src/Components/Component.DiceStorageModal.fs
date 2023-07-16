@@ -132,34 +132,36 @@ let private storedDice(state:State, setState: State-> unit, storageState: DiceSt
             removeFromDiceStorage(id, state, setState, storageState, setStorageState)
         )
     ]
-    Bulma.table [
-        if state.DiceStorage.Count > 0 then
-            Html.thead [
-                Html.tr [ 
-                    Html.th "Shortcut"
-                    Html.th "Dice"
-                    Html.th "Quick Access"
-                    Html.th [ ]
+    Bulma.tableContainer [
+        Bulma.table [
+            if state.DiceStorage.Count > 0 then
+                Html.thead [
+                    Html.tr [ 
+                        Html.th "Shortcut"
+                        Html.th "Dice"
+                        Html.th "Quick Access"
+                        Html.th [ ]
+                    ]
                 ]
-            ]
-            Html.tbody [
-                //if storageState.Current.Count > 0 then
-                    //for KeyValue(id, diceString) in storageState.Current do
-                    for KeyValue(id, diceString) in state.DiceStorage do
-                        Html.tr [
-                            prop.key (sprintf "Stored-Dice-%s" id)
-                            prop.children [
-                                Html.td [prop.key (sprintf "Stored-Dice-Name-%s" id); prop.children (Html.code ("/"+id))]
-                                Html.td [prop.key (sprintf "Stored-Dice-diceString-%s" id); prop.text diceString]
-                                Html.td [prop.key (sprintf "Stored-Dice-quick-access-%s" id); prop.children (quickAccessToggleButton(id, state, setState, storageState, setStorageState)) ]
-                                Html.td [prop.key (sprintf "Stored-Dice-remove-%s" id); prop.children (rmvButton(id))]
+                Html.tbody [
+                    //if storageState.Current.Count > 0 then
+                        //for KeyValue(id, diceString) in storageState.Current do
+                        for KeyValue(id, diceString) in state.DiceStorage do
+                            Html.tr [
+                                prop.key (sprintf "Stored-Dice-%s" id)
+                                prop.children [
+                                    Html.td [prop.key (sprintf "Stored-Dice-Name-%s" id); prop.children (Html.code ("/"+id))]
+                                    Html.td [prop.key (sprintf "Stored-Dice-diceString-%s" id); prop.text diceString]
+                                    Html.td [prop.key (sprintf "Stored-Dice-quick-access-%s" id); prop.children (quickAccessToggleButton(id, state, setState, storageState, setStorageState)) ]
+                                    Html.td [prop.key (sprintf "Stored-Dice-remove-%s" id); prop.children (rmvButton(id))]
+                                ]
                             ]
-                        ]
-            ]
-        else
-            Html.tbody [
-                emptyRow
-            ]
+                ]
+            else
+                Html.tbody [
+                    emptyRow
+                ]
+        ]
     ]
 
 let private addNewToStorageElement(state:State, setState: State-> unit, storageState: DiceStorage.State, setStorageState: DiceStorage.State -> unit) =
@@ -223,6 +225,7 @@ let Main(state:State) (setState: State-> unit) (rmv: _ -> unit) =
                 ]
             ]
             Bulma.modalClose [
+                Bulma.color.hasBackgroundBlack
                 Bulma.modalClose.isMedium
                 prop.ariaLabel "close"
                 prop.onClick rmv

@@ -101,7 +101,8 @@
     }
 }
 
-@media screen and (max-width: 481px) {
+@media screen and (max-width: 481px),
+    screen and (max-height: 481px) {
 
     #dice-roller-history {
         position: absolute;
@@ -128,6 +129,15 @@
         -webkit-font-smoothing: antialiased;
         font: var(--fa-font-solid);
         content: "\f6cf";
+    }
+
+    .modal-content {
+        max-height: unset;
+        flex-grow: 1;
+    }
+
+    .modal-content .box {
+        min-height: 100%
     }
 }
 
