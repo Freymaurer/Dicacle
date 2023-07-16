@@ -225,8 +225,9 @@ let Main(state:State) (setState: State-> unit) (rmv: _ -> unit) =
                 ]
             ]
             Bulma.modalClose [
-                Bulma.color.hasBackgroundBlack
+                //Bulma.color.hasBackgroundBlack
                 Bulma.modalClose.isMedium
+                Bulma.color.hasBackgroundBlack
                 prop.ariaLabel "close"
                 prop.onClick rmv
             ]

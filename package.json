@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "start": "dotnet tool restore && dotnet fable watch src --runFast vite",
+    "start-host": "dotnet tool restore && dotnet fable watch src --runFast vite --host",
     "build": "dotnet tool restore && dotnet fable src --run vite build --emptyOutDir",
     "clean": "dotnet fable clean src --yes",
     "pretest": "dotnet fable clean tests --yes & dotnet fable tests -o tests/dist",
