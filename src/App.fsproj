@@ -3,7 +3,9 @@
         <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="styles.css" />
+        <Content Include="styles\styles.css" />
+        <None Include="styles\styles_dark.scss" />
+        <None Include="styles\styles_light.scss" />
         <Compile Include="Literals.fs" />
         <Compile Include="Extensions.fs" />
         <Compile Include="Routing.fs" />
@@ -14,6 +16,7 @@
         <Compile Include="Dice\Dice.HtmlAux.fs" />
         <Compile Include="LocalStorage.fs" />
         <Compile Include="States.fs" />
+        <Compile Include="Components\Component.DarkModeButton.fs" />
         <Compile Include="Components\Component.Shake.fs" />
         <Compile Include="Components\Component.QuickAccess.fs" />
         <Compile Include="Components\Component.History.fs" />

@@ -100,18 +100,6 @@
     }
 }
 
-@media (prefers-color-scheme: dark) {
-    .modal-background {
-        background-color: rgba(28, 28, 28, 0.86)
-    }
-
-    .button.is-static {
-        background-color: #242424;
-        border-color: #363636;
-        color: #7a7a7a;
-    }
-}
-
 @media screen and (max-width: 481px),
     screen and (max-height: 481px) {
 
@@ -126,19 +114,6 @@
         min-width: unset;
         width: 100%;
         z-index: 10;
-        background-color: white;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        #dice-roller-history {
-            background-color: #17181c;
-        }
-    }
-
-    @media (prefers-color-scheme: light) {
-        #dice-roller-history {
-            background-color: white;
-        }
     }
 
     #dice-roller-history-inner {

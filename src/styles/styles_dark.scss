@@ -1,0 +1,46 @@
+// 1. Import the initial variables
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+@import "../../node_modules/bulma/sass/utilities/functions";
+
+/*// 2. Set your own initial variables
+// Update blue
+$blue: #72d0eb;
+// Add pink and its invert
+$pink: #ffb3b3;
+$pink-invert: #fff;
+// Add a serif family
+$family-serif: "Merriweather", "Georgia", serif;*/
+
+// 3. Set the derived variables
+// Use the new pink as the primary color
+$scheme-main: $black;
+$scheme-invert: $white;
+$text: $white;
+$text-light: $white-ter;
+$text-strong: $white;
+$code-background: black;
+
+// 6. Import the rest of Bulma
+@import "../../node_modules/bulma/bulma.sass";
+
+.modal-background {
+    background-color: rgba(28, 28, 28, 0.86)
+}
+
+.button.is-static {
+    background-color: #242424;
+    border-color: #363636;
+    color: #7a7a7a;
+}
+
+.tag:not(body) {
+    background-color: black
+}
+
+.modal-close::before, .delete::before, .modal-close::after, .delete::after { 
+    background-color: white
+}
+
+#dice-roller-history {
+    background-color: $scheme-main
+}

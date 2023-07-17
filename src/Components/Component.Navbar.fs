@@ -20,16 +20,20 @@ let private navbarStart() =
 
 let private navbarEnd = 
     Bulma.navbarEnd.div [
+        Component.DarkModeButton.Main()
         Bulma.navbarItem.a [
             prop.href Urls.Github_Dicacle
             prop.target "_blank"
             prop.children [
-                Bulma.icon [
-                    Html.i [
-                        prop.className "fa-brands fa-github fa-xl mr-3"
-                    ]
-                ]
                 Html.span "GitHub"
+                Bulma.icon [
+                    Bulma.icon.isMedium
+                    prop.children (
+                        Html.i [
+                            prop.className "fa-brands fa-github fa-xl"
+                        ]
+                    )
+                ]
             ]
         ]
     ]

@@ -32,3 +32,8 @@ module Urls =
 
     [<Literal>]
     let Github_License = "https://github.com/Freymaurer/Dicacle/blob/main/LICENSE"
+
+module StyleSheets = 
+
+    let [<Literal>] DarkMode = "style-dark"
+    let [<Literal>] LightMode = "style-light"

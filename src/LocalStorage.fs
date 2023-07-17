@@ -1,7 +1,5 @@
 ﻿module LocalStorage
 
-
-
 [<RequireQualifiedAccess>]
 module DiceStorage =
 

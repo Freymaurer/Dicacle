@@ -12,12 +12,14 @@
     "watchtests": "cd tests & dotnet watch run"
   },
   "dependencies": {
+    "bulma": "^0.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^3.1.0",
     "mocha": "^10.2.0",
+    "sass": "^1.63.6",
     "vite": "^4.1.0"
   },
   "engines": {
