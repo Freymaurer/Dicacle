@@ -6,6 +6,6 @@ export default defineConfig({
     base: "./",
     root: "./src",
     build: {
-    outDir: "../docs",
+        outDir: "../docs"
     }
 })
