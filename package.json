@@ -9,7 +9,8 @@
     "pretest": "dotnet fable clean tests --yes & dotnet fable tests -o tests/dist",
     "posttest": "cd tests & dotnet run",
     "test": "mocha tests/dist",
-    "watchtests": "cd tests & dotnet watch run"
+    "watchtests": "cd tests & dotnet watch run",
+    "style": "sass src/styles"
   },
   "dependencies": {
     "bulma": "^0.9.4",
