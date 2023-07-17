@@ -59,18 +59,12 @@ module private JsInteropAux =
     let activateLightMode() =
         let style_dark = Browser.Dom.document.getElementById(Literals.StyleSheets.DarkMode)
         let style_light = Browser.Dom.document.getElementById(Literals.StyleSheets.LightMode)
-        style_light?disabled <- null
         style_dark?disabled <- "disabled"
-        //style_dark?toggleAttribute("disabled")
-        //style_light?toggleAttribute("disabled")
 
     let activateDarkMode() =
         let style_dark = Browser.Dom.document.getElementById(Literals.StyleSheets.DarkMode)
-        let style_light = Browser.Dom.document.getElementById(Literals.StyleSheets.LightMode)
-        //style_dark?toggleAttribute("disabled")
-        //style_light?toggleAttribute("disabled")
-        style_dark?disabled <- null
-        style_light?disabled <- "disabled"
+        style_dark.removeAttribute("disabled")
+        style_dark.removeAttribute("media")
 
     let toggleStyleSheets(mode:ColorMode) =
         match mode with
