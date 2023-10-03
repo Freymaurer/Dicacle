@@ -220,7 +220,7 @@ let Main() =
                                 ]
                                 Bulma.control.div [ 
                                     // alternative, not tested: https://codepen.io/kylewetton/pen/NeRbvz
-                                    if state.Input.ToLower() = "/fireball" then
+                                    if state.Input.ToLower() = "/fireball" || state.Input = state.DiceStorage.["fireball"] then
                                         Html.div [
                                             prop.style [style.position.fixedRelativeToWindow]
                                             prop.children [

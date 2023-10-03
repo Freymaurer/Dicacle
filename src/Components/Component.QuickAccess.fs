@@ -11,7 +11,7 @@ let private tag (id, input, activate) =
     Bulma.tag [
         prop.title input
         prop.style [style.cursor.pointer]
-        prop.onClick (fun _ -> activate id)
+        prop.onClick (fun _ -> activate input )
         prop.children [
             Html.code [
                 prop.style [style.userSelect.none]
