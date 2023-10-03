@@ -90,7 +90,7 @@
     position: fixed;
     right: 0;
     margin-top: 2px;
-    z-index: 31
+    z-index: 1000
 }
 
 @media screen and (max-width: 1228px) {
@@ -141,6 +141,7 @@
     .modal-content .box {
         min-height: 100%
     }
+
 }
 
 
@@ -151,6 +152,13 @@
     height: 1px;
     transform: scale(5) translate(-13px, -15px);
     width: 1px;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    pointer-events: none;
+    position: absolute;
+    top: -60px;
+    right: -50px
 }
 
 .glow {
@@ -160,17 +168,11 @@
     height: 280px;
     opacity: 0.5;
     width: 280px;
-}
-
-.flame,
-.glow {
-    bottom: 0;
-    left: 0;
+    bottom: -60px;
+    left: -110px;
     margin: auto;
     pointer-events: none;
     position: absolute;
-    right: -50px;
-    top: -60px;
 }
 
 @keyframes burnBabyBurn {

@@ -7,12 +7,5 @@ export default defineConfig({
     root: "./src",
     build: {
         outDir: "../docs"
-    },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                includePaths: ['node_modules']
-            }
-        }
-    },
+    }
 })
