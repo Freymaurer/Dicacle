@@ -219,8 +219,14 @@ let Main() =
                                     ]
                                 ]
                                 Bulma.control.div [ 
+                                    let isFireball = 
+                                        let directly = state.Input.ToLower() = "/fireball"
+                                        let fromMap = 
+                                            let containsKey = state.DiceStorage.ContainsKey "fireball"
+                                            if containsKey then state.Input = state.DiceStorage.["fireball"] else false
+                                        directly || fromMap
                                     // alternative, not tested: https://codepen.io/kylewetton/pen/NeRbvz
-                                    if state.Input.ToLower() = "/fireball" || state.Input = state.DiceStorage.["fireball"] then
+                                    if isFireball then
                                         Html.div [
                                             prop.style [style.position.fixedRelativeToWindow]
                                             prop.children [
