@@ -1,41 +1,40 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <Content Include="styles\styles.css" />
-        <None Include="styles\styles_dark.scss" />
-        <None Include="styles\styles_light.scss" />
-        <Compile Include="Literals.fs" />
-        <Compile Include="Extensions.fs" />
-        <Compile Include="Routing.fs" />
-        <Compile Include="Classes.fs" />
-        <Compile Include="Dice\Dice.Icon.fs" />
-        <Compile Include="Dice\Dice.Roll.fs" />
-        <Compile Include="Dice\Dice.Parsing.fs" />
-        <Compile Include="Dice\Dice.HtmlAux.fs" />
-        <Compile Include="LocalStorage.fs" />
-        <Compile Include="States.fs" />
-        <Compile Include="Components\Component.DarkModeButton.fs" />
-        <Compile Include="Components\Component.Shake.fs" />
-        <Compile Include="Components\Component.QuickAccess.fs" />
-        <Compile Include="Components\Component.History.fs" />
-        <Compile Include="Components\Component.DiceStorageModal.fs" />
-        <Compile Include="Components\Component.Footer.fs" />
-        <Compile Include="Components\Component.Navbar.fs" />
-        <Compile Include="Pages\Page.Reference.fs" />
-        <Compile Include="Pages\Page.Dicacle.fs" />
-        <Compile Include="Components.fs" />
-        <Compile Include="Main.fs" />
-        <None Include="index.html" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Fable.SimpleJson" Version="3.24.0" />
-        <PackageReference Include="Feliz" Version="2.6.0" />
-        <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
-        <PackageReference Include="Feliz.Router" Version="4.0.0" />
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Update="FSharp.Core" Version="[6.0.7]" />
-    </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="styles\styles.scss" />
+    <Compile Include="Literals.fs" />
+    <Compile Include="Extensions.fs" />
+    <Compile Include="Routing.fs" />
+    <Compile Include="State.ColorMode.fs" />
+    <Compile Include="Classes.fs" />
+    <Compile Include="Dice\Dice.Icon.fs" />
+    <Compile Include="Dice\Dice.Roll.fs" />
+    <Compile Include="Dice\Dice.Parsing.fs" />
+    <Compile Include="Dice\Dice.HtmlAux.fs" />
+    <Compile Include="LocalStorage.fs" />
+    <Compile Include="States.fs" />
+    <Compile Include="Components\Component.DarkModeButton.fs" />
+    <Compile Include="Components\Component.Shake.fs" />
+    <Compile Include="Components\Component.QuickAccess.fs" />
+    <Compile Include="Components\Component.History.fs" />
+    <Compile Include="Components\Component.DiceStorageModal.fs" />
+    <Compile Include="Components\Component.Footer.fs" />
+    <Compile Include="Components\Component.Navbar.fs" />
+    <Compile Include="Pages\Page.Reference.fs" />
+    <Compile Include="Pages\Page.Dicacle.fs" />
+    <Compile Include="Components.fs" />
+    <Compile Include="Main.fs" />
+    <None Include="index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Fable.SimpleJson" Version="3.24.0" />
+    <PackageReference Include="Feliz" Version="2.6.0" />
+    <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
+    <PackageReference Include="Feliz.Router" Version="4.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="[6.0.7]" />
+  </ItemGroup>
 </Project>
