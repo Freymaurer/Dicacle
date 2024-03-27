@@ -3,141 +3,194 @@
 open System.Text.RegularExpressions
 open Classes
 
-module Pattern = 
-    
+open System.Text.RegularExpressions
+
+module Regex =
+
     [<LiteralAttribute>]
-    let SetPattern = @"(?<setCount>\d*)?\s*(^|\()(?<diceRolls>[a-zA-Z0-9\s+-]*)($|\))"
+    let private SetPattern = @"(?<setCount>\d*)?(?(setCount)\(|)(?<diceRolls>[a-zA-Z0-9+-]+)(?(setCount)\)|)"
+    let private SetRegex = Regex(SetPattern,RegexOptions.Singleline)
+
     [<LiteralAttribute>]
-    let DiceRollsPattern = @"(?<command>^|\+|-)\s*(?<diceRoll>[a-zA-Z0-9\s]+)"
+    let private DicePattern = @"(?<command>\+|-)?(?<diceRoll>[a-zA-Z0-9]+)"
+    let private DiceRegex = Regex(DicePattern,RegexOptions.Singleline)
 
-    module DiceRollPatterns =
-        let createSubPattern(subpatternName:string, identifier: string list) = sprintf @"(?<%s>(?<%sType>%s)(?<%sNumber>\d+))" subpatternName subpatternName (String.concat "|" identifier) subpatternName
-        let KeepDropPattern = createSubPattern("KeepDrop", ["k"; "kh"; "kl"; "d"; "dl"; "dh"])
-        let ExplodePattern = createSubPattern("Explode", ["e"; "ie"])
-        let RerollPattern = createSubPattern("Reroll", ["r"; "ir"])
-        let DicePattern = @"^(?<DiceCount>\d+)((d|w)(?<DiceSize>\d+))?"
+    [<LiteralAttribute>]
+    let private DiceBasicPattern = @"^(?<dicecount>\d+)?(?<d>(?(dicecount)d{1}|d?))(?<dicesize>\d+)(?(dicecount)(?<operations>[a-zA-Z0-9]+))?$"
+    let private DiceBasicRegex = Regex(DiceBasicPattern)
 
-    open DiceRollPatterns
 
-    let tryKeepDrop input =
-        let matches = Regex.Matches(input,KeepDropPattern)
-        match matches.Count with
-        | 1 -> 
-            let m = matches.[0]
-            let t = m.Groups.["KeepDropType"].Value // required
-            let n = m.Groups.["KeepDropNumber"].Value |> int // required
-            KeepDrop.ofString(t,n) |> Some
-        | empty when empty <= 0 -> 
-            None
-        | _ ->
-            failwith "Found Keep/Drop logic multiple times in dice roll."
+    module Operations = 
 
-    let tryExplode input =
-        let matches = Regex.Matches(input,ExplodePattern)
-        match matches.Count with
-        | 1 -> 
-            let m = matches.[0]
-            let t = m.Groups.["ExplodeType"].Value // required
-            let n = m.Groups.["ExplodeNumber"].Value |> int // required
-            Explode.ofString(t,n) |> Some
-        | empty when empty <= 0 -> 
-            None
-        | _ ->
-            failwith "Found Keep/Drop logic multiple times in dice roll."
+        [<LiteralAttribute>]
+        let private KeepDropPattern = @"(?<operation>k|kh|kl|d|dl|dh)(?<count>\d+)"
+        let private KeepDropRegex = Regex(KeepDropPattern)
 
-    let tryReroll input =
-        let matches = Regex.Matches(input,RerollPattern)
-        match matches.Count with
-        | 1 -> 
-            let m = matches.[0]
-            let t = m.Groups.["RerollType"].Value // required
-            let n = m.Groups.["RerollNumber"].Value |> int // required
-            Reroll.ofString(t,n) |> Some
-        | empty when empty <= 0 -> 
-            None
-        | _ ->
-            failwith "Found Keep/Drop logic multiple times in dice roll."
+        let getKeepDrop(str: string) = 
+            let m = KeepDropRegex.Match(str)
+            match m.Success with
+            | false ->
+                None
+            | true ->
+                let count = int m.Groups.["count"].Value
+                let operation = 
+                    match m.Groups.["operation"].Value.ToLower() with
+                    | "kh" | "k" -> DiceOperations.KeepHighest
+                    | "kl" -> DiceOperations.KeepLowest
+                    | "dl" | "d" -> DiceOperations.DropLowest
+                    | "dh" -> DiceOperations.DropHighest
+                    | anyElse -> failwithf "Error. Unknown input for KeepDrop pattern: `%s`" anyElse
+                Some (operation count)
 
-/// These types are only used to make testing easier and should never be used outside.
-module DiceParsingTypes = 
+        let private ExplodePattern = @"(?<operation>e|ie|ei)(?<threshold>\d+)"
+        let private ExplodeRegex = Regex(ExplodePattern)
 
-    type PreSet = {
-        setCount: int; diceRolls: string
-    } with
-        static member create(setCount: int, diceRolls: string) : PreSet = {
-            setCount = setCount; diceRolls = diceRolls
-        }
+        let getExplode(str: string) = 
+            let m = ExplodeRegex.Match(str)
+            match m.Success with
+            | false ->
+                None
+            | true ->
+                let threshold = int m.Groups.["threshold"].Value
+                let operation = 
+                    match m.Groups.["operation"].Value.ToLower() with
+                    | "e" -> fun t -> DiceOperations.Explode t
+                    | "ie" | "ei" -> fun t -> DiceOperations.ExplodeInfinity t
+                    | anyElse -> failwithf "Error. Unknown input for Explode pattern: `%s`" anyElse
+                Some (operation threshold)
+                
+        let private RerollPattern = @"(?<operation>r|ir|ri)(?<threshold>\d+)"
+        let private RerollRegex = Regex(RerollPattern)
 
-    type PreDiceRoll = {
-        command: Command; 
-        diceRoll: string
-    } with
-        static member create(command: Command, diceRoll: string) : PreDiceRoll = {
-            command = command; 
-            diceRoll = diceRoll
-        }
+        let getReroll(str: string) = 
+            let m = RerollRegex.Match(str)
+            match m.Success with
+            | false ->
+                None
+            | true ->
+                let threshold = int m.Groups.["threshold"].Value
+                let operation = 
+                    match m.Groups.["operation"].Value.ToLower() with
+                    | "r" -> fun t -> DiceOperations.Reroll t
+                    | "ir" | "ri" -> fun t -> DiceOperations.RerollInfinity t
+                    | anyElse -> failwithf "Error. Unknown input for Explode pattern: `%s`" anyElse
+                Some (operation threshold)
 
-open DiceParsingTypes
-
-module DiceParsingAux =
-
-    let parseSets(input: string) = 
-        let input = input.Replace(" ","")
-        let matches = Regex.Matches(input, Pattern.SetPattern)
-        if matches.Count = 0 then failwith $"Unable to parse `{input}` to sets!"
-        [
+    /// <summary>
+    /// Matches Sets from string. A set is surrounded by braces and can have a count in front.
+    /// If no braces exist the full string is one set:
+    ///
+    /// - "3 (1d20 + 14) 10 (4d6 + 15)" 
+    ///  
+    /// ==> {| count = 3; set = "1d20+14"|} {| count = 10; set = "4d6+15" |}
+    ///
+    ///
+    /// - "5d8 k1 + 3d6 e6 -10 - 2d11dl1 + 11" 
+    ///  
+    /// ==> {| count = 1; set = "5d8 k1 + 3d6 e6 -10 - 2d11dl1 + 11"|}
+    /// </summary>
+    /// <param name="str"></param>
+    let getSets(str:string) =
+        let matches = SetRegex.Matches(str)
+        if matches.Count = 0 then failwithf "No `Set` matches for %s" str
+        let defaultSetCount (setCount:string) = if setCount = "" then 1 else int setCount
+        [|
             for m in matches do
-                /// This group is optional
-                let setCount = match m.Groups.["setCount"].Value.Trim() with | "" -> 1 | anyelse -> int anyelse
-                /// This group is mandatory
-                let diceRolls = m.Groups.["diceRolls"].Value
-                PreSet.create(setCount,diceRolls)
-        ]
+                defaultSetCount m.Groups.["setCount"].Value, 
+                m.Groups.["diceRolls"].Value
+        |]
 
-    let parseDiceRolls(input: string) = 
-        let matches = Regex.Matches(input, Pattern.DiceRollsPattern)
-        if matches.Count = 0 then failwith $"Unable to parse `{input}` to dice rolls!"
-        [
+    /// <summary>
+    /// Get different Dice from a Set string. Dice are separated by `+` or `-` or beginn with line start and implicit `+`.
+    ///
+    /// - "1d20 + 14"
+    ///  
+    /// ==> {| command = (+); diceroll = "1d20" |} {| command = (+); diceroll = "14" |}
+    ///
+    /// - "3d6 e6 -10 - 2d11dl1"
+    ///  
+    /// ==> {| command = (+); diceroll = "3d6e6" |} {| command = (-); diceroll = "10" |} {| command = (-); diceroll = "2d11dl1" |}
+    /// </summary>
+    /// <param name="str"></param>
+    let getDiceRollInfo(str:string) =
+        let matches = DiceRegex.Matches(str)
+        if matches.Count = 0 then failwithf "No `Dice` matches for %s" str
+        [|
             for m in matches do
-                let command = m.Groups.["command"].Value.Trim() |> Command.ofString
-                /// This group is mandatory
-                let diceRolls = m.Groups.["diceRoll"].Value.Trim()
-                PreDiceRoll.create(command,diceRolls)
-        ]
+                Command.fromString m.Groups.["command"].Value, 
+                m.Groups.["diceRoll"].Value
+        |]
 
-    let parseDiceRoll(preDiceRoll:PreDiceRoll) = 
-        let input = preDiceRoll.diceRoll
-        let command = preDiceRoll.command
-        let m = Regex.Match(input, Pattern.DiceRollPatterns.DicePattern)
+
+    /// <summary>
+    /// Get different DiceBasic from a Dice string.
+    ///
+    /// - "1d20"
+    ///  
+    /// ==> {| dicecount = 1; dicesize = 20; operations = None |}
+    ///
+    /// - "d12"
+    ///  
+    /// ==> {| dicecount = 1; dicesize = 12; operations = None |}
+    ///
+    /// - "14"
+    ///  
+    /// ==> {| dicecount = 14; dicesize = 1; operations = None |}
+    /// </summary>
+    /// <param name="str"></param>
+    let getDiceBasic(str:string) = 
+        let m = DiceBasicRegex.Match(str)
         match m.Success with
-        | true -> 
-            /// required
-            let diceCount = m.Groups.["DiceCount"].Value |> int
-            /// optional
-            let diceSize = match m.Groups.["DiceSize"].Value with | "" -> 0 | anyNumber -> int anyNumber
-            match diceSize with
-            // if no diceSize, all other options are not valid.
-            | 0 -> 
-                Dice.create(diceCount, diceSize, command)
-            | _ ->
-                let diceRollParams = input.Remove(0,m.Length).Trim()
-                let explode = Pattern.tryExplode(diceRollParams)
-                let reroll = Pattern.tryReroll(diceRollParams)
-                let keepdrop = Pattern.tryKeepDrop(diceRollParams)
-                Dice.create(diceCount, diceSize, command, ?explode=explode, ?reroll=reroll, ?keepdrop=keepdrop)
         | false ->
-            failwithf "Unable to find `DicePattern` (e.g. `3d6`, `14`) at beginning of role: %s" input
+            failwithf "No `DiceBasic` matches for %s" str
+        | true ->
+            let defaultDiceCount (dicecount:string) = if dicecount = "" then 1 else int dicecount
+            // if no `d` is present we have only a flat bonus/malus we model this with flatbonus = dicecount and dicesize = 1
+            if m.Groups.["d"].Value = "" then
+                int m.Groups.["dicesize"].Value,
+                1,
+                None
+            // if `d` is present we follow normal groups
+            else
+                defaultDiceCount m.Groups.["dicecount"].Value,
+                int m.Groups.["dicesize"].Value,
+                match m.Groups.["operations"].Success with | true -> Some m.Groups.["operations"].Value | _ -> None
 
-open DiceParsingAux
+    let getOperations (str: string option) =
+        match str with
+        | None -> [||]
+        | Some str ->
+            let operations = ResizeArray()
+            Operations.getReroll str |> Option.iter (fun r -> operations.Add r)
+            Operations.getExplode str |> Option.iter (fun r -> operations.Add r)
+            Operations.getKeepDrop str |> Option.iter (fun r -> operations.Add r)
+            operations.ToArray()
+        
+open Regex
 
-/// Main parsing function, parses string to dice and rolls.
-let diceAndRoll(input:string) =
-    let rnd = new System.Random()
-    let sets = parseSets input
-    let setList = 
-        sets
-        |> List.map (fun set ->
-            let dice = parseDiceRolls set.diceRolls |> List.map (fun preDie -> parseDiceRoll(preDie)) |> ResizeArray
-            DiceSet.create(set.setCount, dice).rollBy(rnd)
+let parseGeneralDice (input: string, now: System.DateTime) =
+    let input = input.Replace(" ","") //shadow but remove all whitespace
+    let sets = 
+        // solve sets, either by linestart or by brackets
+        getSets input 
+        |> Array.map (fun (count,setStr) -> 
+            let dice = 
+                // split set into different dice with +/- information
+                getDiceRollInfo setStr 
+                |> Array.map (fun (command,rawBasicDiceStr) ->
+                    // get the number of dice and the dice size, as well as the raw operations (keep/drop,explode,reroll)
+                    let diceCount, diceSize, rawOperations = getDiceBasic rawBasicDiceStr 
+                    // get operations parsed
+                    let operations = getOperations rawOperations
+                    let singleDice = Dice.create(diceCount,diceSize,operations)
+                    DiceRollInfo.create(singleDice,command)
+                )
+                |> ResizeArray
+            DiceSet.create(count,dice)
         )
-    DiceSets.create(input, ResizeArray(setList))
+        |> ResizeArray
+    DiceSets.create(
+        input,
+        sets,
+        now
+    )

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Regex.Tests.fs" />
-    <Compile Include="DiceRoll.Tests.fs" />
+    <Compile Include="Dice.Parsing.Tests.fs" />
+    <Compile Include="Dice.Roll.Tests.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 

@@ -1,134 +1,143 @@
-﻿module Classes
+﻿[<AutoOpenAttribute>]
+module Classes
 
+type DiceCount = int
+type DiceSize = int
+type FlatBonus = int
+type Threshold = int
+type Count = int
 
-//type IPrintable =
-//   abstract member Print : unit -> unit
+type DiceOperations =
+    | KeepHighest of Count
+    | KeepLowest of Count
+    | DropHighest of Count
+    | DropLowest of Count
+    /// Reroll below Threshold
+    | Reroll of Threshold
+    | RerollInfinity of Threshold
+    /// Explode above Threshold
+    | Explode of Threshold
+    | ExplodeInfinity of Threshold
 
-//type SomeClass1(x: int, y: float) =
-//   interface IPrintable with
-//      member this.Print() = printfn "%d %f" x y
-
-/// Keep/Drop highest/lowest `int` dice results
-[<RequireQualifiedAccess>]
-type KeepDrop =
-    | KeepHighest of int
-    | KeepLowest of int
-    | DropHighest of int
-    | DropLowest of int
-
-    with
-    static member ofString(strType:string, n: int) =
-        match strType with
-        | "k" | "kh"    -> KeepHighest n
-        | "kl"          -> KeepLowest n
-        | "d" | "dl"    -> DropLowest n
-        | "dh"          -> DropHighest n
-        | anyelse -> failwith $"Unable to parse `{anyelse}` to Keep/Drop logic"
-
-/// Reroll any dice result below `int`, `Once` or `Inf`
-[<RequireQualifiedAccess>]
-type Reroll =
-    | Once of int
-    | Inf of int
-
-    with
-    static member ofString(strType:string, n: int) =
-        match strType with
-        | "r"       -> Reroll.Once n
-        | "ir"      -> Reroll.Inf n
-        | anyelse -> failwith $"Unable to parse `{anyelse}` to reroll logic"
-    
-/// Explode any dice result above `int`, `Once` or `Inf`
-[<RequireQualifiedAccess>]
-type Explode =
-    | Once of int
-    | Inf of int
-
-    with
-    static member ofString(strType:string, n: int) =
-        match strType with
-        | "e"       -> Explode.Once n
-        | "ie"      -> Explode.Inf n
-        | anyelse -> failwith $"Unable to parse `{anyelse}` to explode logic"
-
-[<RequireQualifiedAccess>]
-type Command =
-    | Add
-    | Substract
-    with
-    static member ofString(str:string) =
-        match str with
-        | "" | "+" -> Command.Add
-        | "-" -> Command.Substract
-        | anyelse -> failwith $"Unable to parse `{anyelse}` to `+` or `-`."
+type [<RequireQualifiedAccess>] Command = 
+    | Plus
+    | Minus
+    member this.AsFunction = 
+        match this with | Plus -> (+) | Minus -> (-)
 
     member this.AsString =
         match this with
-        | Command.Add -> "+"
-        | Command.Substract -> "-"
+        | Command.Plus -> "+"
+        | Command.Minus -> "-"
+
+    static member fromString (str: string) = 
+        match str with | "" | "+" -> Command.Plus | "-" -> Command.Minus | any -> failwithf "Error: Unknow pattern for Command: %s" any
 
 open System
 
 type Dice = {
-    Command: Command
-    DiceCount: int
-    DiceSize: int
-    Explode: Explode option
-    Reroll: Reroll option
-    KeepDrop: KeepDrop option
+    DiceCount: DiceCount
+    DiceSize: DiceSize
+    Operations: DiceOperations []
 } with
-    static member create(count:int, size:int, ?command, ?explode, ?reroll, ?keepdrop) =
-        {
-            DiceCount = count
-            DiceSize = size
-            Command = defaultArg command Command.Add
-            Explode = explode
-            Reroll = reroll
-            KeepDrop = keepdrop
-        }
+    /// <summary>
+    /// Used to create most inner dice roll information. 
+    /// </summary>
+    /// <param name="count"></param>
+    /// <param name="size">defaultArg: 1</param>
+    /// <param name="operations">defaultArg: 0</param>
+    static member create (count, ?size, ?operations: DiceOperations []) = {
+        DiceCount = count
+        DiceSize = defaultArg size 1
+        Operations = defaultArg operations Array.empty
+    }
 
-type DiceRoll = {
+[<CustomEquality; NoComparison>]
+type DiceRollInfo = {
     Dice: Dice
+    /// (+) or (-)
+    Command: Command
     /// Raw rolled dice results before sum
     DiceRolled: ResizeArray<int>
     /// Sum of rolles dice
     DiceRollSum: int
 } with
-    static member create(dice, diceRolled, diceRollSum) = {
+    static member create(dice, ?command, ?diceRolled, ?diceRollSum) = {
         Dice = dice
-        DiceRolled = diceRolled
-        DiceRollSum = diceRollSum
+        Command = defaultArg command Command.Plus
+        DiceRolled = defaultArg diceRolled <| ResizeArray()
+        DiceRollSum = defaultArg diceRollSum 0
     }
+
+    override this.Equals(o: obj) =
+        match o with
+        | :? DiceRollInfo as other->
+            this.Dice = other.Dice
+            && this.Command = other.Command
+            && Seq.length this.DiceRolled = Seq.length other.DiceRolled
+            && Seq.forall2 (fun t o -> t = o) this.DiceRolled other.DiceRolled
+            && this.DiceRollSum = other.DiceRollSum
+        | _ -> 
+            failwith "Error. Cannot compare `DiceRollInfo` with another type."
+
+    override this.GetHashCode() = failwith "GetHashCode is not implemented on `DiceRollInfo`!"
 
 type SetResult = {
     Index: int
-    Results: ResizeArray<DiceRoll>
+    Dice: DiceRollInfo []
+    Sum: int
 } with
-    static member create(i, res) = {
-        Index = i
-        Results = res
-    }
+    static member create(index, dice, sum) =
+        {
+            Index = index
+            Dice = dice
+            Sum = sum
+        }
 
+[<CustomEquality; NoComparison>]
 type DiceSet = {
     SetCount: int
-    DiceRolls: ResizeArray<Dice>
-    Results: ResizeArray<SetResult>
+    Dice: ResizeArray<DiceRollInfo>
+    Results: SetResult []
 } with
-    static member create(count, diceRolls, ?results) = {
+    static member create(count, dice) = {
         SetCount = count
-        DiceRolls = diceRolls
-        Results = defaultArg results <| ResizeArray()
+        Dice = dice
+        Results = [||]
     }
+
+    override this.Equals(o: obj) =
+        match o with
+        | :? DiceSet as other->
+            this.SetCount = other.SetCount
+            && Seq.length this.Dice = Seq.length other.Dice
+            && Seq.forall2 (fun t o -> t = o) this.Dice other.Dice
+        | _ -> 
+            failwith "Error. Cannot compare `DiceSet` with another type."
+
+    override this.GetHashCode() = failwith "GetHashCode is not implemented on `DiceSet`!"
     
+[<CustomEquality; NoComparison>]
 type DiceSets = {
     Input: string
     Time: System.DateTime
     DiceSets: ResizeArray<DiceSet>
 } with
-    static member create(input:string, sets) = 
-        let n = System.DateTime.Now
+    static member create(input:string, sets, ?now) = 
         {
             Input = input
-            Time = n
+            Time = defaultArg now System.DateTime.Now
             DiceSets = sets
         }
+
+    override this.Equals(o: obj) =
+        match o with
+        | :? DiceSets as other->
+            this.Input = other.Input
+            && this.Time = other.Time
+            && Seq.length this.DiceSets = Seq.length other.DiceSets
+            && Seq.forall2 (fun t o -> t = o) this.DiceSets other.DiceSets
+        | _ -> 
+            failwith "Error. Cannot compare DiceSets with another type."
+
+    override this.GetHashCode() = failwith "GetHashCode is not implemented on `DiceSets`!"

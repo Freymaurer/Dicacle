@@ -9,7 +9,7 @@ open States.Dicacle
 
 let private event_rollDiceFromString(input:string, state:State, setState: State -> unit) =
     let parsedInput = if input.StartsWith("/") then state.DiceStorage.[input.[1..]] else input
-    let diceSets = Dice.Parsing.diceAndRoll(parsedInput)
+    let diceSets = Dice.Controller.diceAndRoll(parsedInput)
     //let rnd = new System.Random()
     //let nextDiceSets = 
     //    sets

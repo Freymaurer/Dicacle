@@ -53,7 +53,7 @@ let diceIconOf(diceValue: int, diceSize:int) =
         ]
     ]
 
-type DiceRoll with
+type DiceRollInfo with
     member this.ToHtml() =
         let size = this.Dice.DiceSize
         let container (children: Fable.React.ReactElement list) = 
@@ -63,7 +63,7 @@ type DiceRoll with
         let sum = 
             Html.span [
                 prop.className "mr-2 dice-result-subsum"
-                prop.text $"{this.Dice.Command.AsString}{this.DiceRollSum}"
+                prop.text $"{this.Command.AsString}{this.DiceRollSum}"
             ]
         let createDiceIcons() = 
             [
@@ -85,7 +85,7 @@ type DiceRoll with
 
 type SetResult with
     member this.ToHtml() =
-        let sum = (this.Results |> Seq.sumBy (fun res -> if res.Dice.Command = Command.Substract then res.DiceRollSum * (-1) else res.DiceRollSum))
+        let sum = this.Sum
         Html.div [
             prop.className "dice-result-container is-flex is-align-items-center"
             prop.children [
@@ -93,8 +93,8 @@ type SetResult with
                     prop.className "dice-result-subsum-container"
                     prop.style [style.fontSize (length.px 10)]
                     prop.children [
-                        for diceRoll in this.Results do
-                                diceRoll.ToHtml()
+                        for diceRoll in this.Dice do
+                            diceRoll.ToHtml()
                     ]
                 ]
                 Html.span [

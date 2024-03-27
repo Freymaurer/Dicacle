@@ -66,14 +66,16 @@ module RollAux =
                         {|sum=sum; explosions=tries|}
                 loop 0 roll roll
 
-    let reroll(t: Reroll, diceSize: int, rollArr: ResizeArray<int>) =
+    let reroll(reroll: DiceOperations, diceSize: DiceSize, rollArr: ResizeArray<int>) =
         fun (rnd:Random) ->
             let prepareReroll = 
-                match t with 
-                | Reroll.Once treshold -> 
+                match reroll with 
+                | Reroll treshold -> 
                     fun roll -> RerollAux.rerollOnce(treshold,roll,diceSize) rnd
-                | Reroll.Inf treshold -> 
+                | RerollInfinity treshold -> 
                     fun roll -> RerollAux.rerollInf(treshold,roll,diceSize) rnd
+                | _ ->
+                    failwith "Passed non-reroll operation into 'reroll' function."
             //let mutable l = []
             for i in 0 .. (rollArr.Count-1) do
                 let roll = rollArr.[i]
@@ -82,14 +84,16 @@ module RollAux =
         //    l <- ex::l
         //l |> List.rev
 
-    let explode(t: Explode, diceSize: int, rollArr: ResizeArray<int>) =
+    let explode(explode: DiceOperations, diceSize: int, rollArr: ResizeArray<int>) =
         fun (rnd:Random) ->
             let prepareExplode = 
-                match t with 
-                | Explode.Once treshold -> 
+                match explode with 
+                | Explode treshold -> 
                     fun roll -> ExplodeAux.explodeOnce(treshold,roll,diceSize) rnd
-                | Explode.Inf treshold -> 
+                | ExplodeInfinity treshold -> 
                     fun roll -> ExplodeAux.explodeInf(treshold,roll,diceSize) rnd
+                | _ ->
+                    failwith "Passed non-explode operation into 'explode' function."
             //let mutable l = []
             for i in 0 .. (rollArr.Count-1) do
                 let roll = rollArr.[i]
@@ -98,44 +102,93 @@ module RollAux =
         //    l <- ex::l
         //l |> List.rev
 
-    let keepDrop(kdt: KeepDrop, rollArr:ResizeArray<int>) =
+    let keepDrop(kdt: DiceOperations, rollArr:ResizeArray<int>) =
         rollArr.Sort()
         match kdt with
-        | KeepDrop.KeepHighest n -> 
+        | KeepHighest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(0,diff)
-        | KeepDrop.KeepLowest n -> 
+        | KeepLowest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(n,diff)
-        | KeepDrop.DropHighest n -> 
+        | DropHighest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(diff,n)
-        | KeepDrop.DropLowest n ->
+        | DropLowest n ->
             rollArr.RemoveRange(0,n)
+        | _ ->
+            failwith "Passed non-keep/drop operation into 'keepDrop' function."
+
+type DiceOperations with
+    /// <summary>
+    /// This function updates the given ResizeArray mutably.
+    /// </summary>
+    /// <param name="diceSize"></param>
+    /// <param name="r"></param>
+    /// <param name="rnd"></param>
+    static member rollBy(diceSize, r, rnd) = 
+        fun (operation: DiceOperations) ->
+            match operation with
+            | KeepHighest _ | KeepLowest _ | DropHighest _ | DropLowest _ ->
+                RollAux.keepDrop(operation, r)
+            | Reroll _ | RerollInfinity _ ->
+                RollAux.reroll(operation, diceSize, r) rnd
+            | Explode _ | ExplodeInfinity _ ->
+                RollAux.explode(operation, diceSize, r) rnd
 
 type Dice with
-    member this.roll(): DiceRoll = 
+    member this.roll(): ResizeArray<int> = 
         let rnd = new Random()
         this.rollBy(rnd)
 
-    member this.rollBy(rnd:Random) =
+    member this.rollBy(rnd:Random) : ResizeArray<int> =
         let rolls = rollMultipleBy(this.DiceCount, this.DiceSize) rnd
-        this.Explode |> Option.map (fun et -> RollAux.explode(et,this.DiceSize,rolls) rnd) |> ignore
-        this.Reroll |> Option.map (fun rt -> RollAux.reroll(rt,this.DiceSize,rolls) rnd) |> ignore
-        this.KeepDrop |> Option.map (fun kdt -> RollAux.keepDrop(kdt,rolls)) |> ignore
-        DiceRoll.create(this, rolls, Seq.sum rolls)
+        for diceOperation in this.Operations do
+            DiceOperations.rollBy(this.DiceSize, rolls, rnd) diceOperation
+        rolls
+
+type DiceRollInfo with
+    
+    member this.roll() = 
+        let rnd = new Random()
+        this.rollBy(rnd)
+    
+    member this.rollBy(rnd:Random) =
+        let r = this.Dice.rollBy(rnd)
+        let sum = Seq.sum r
+        {this with DiceRolled = r; DiceRollSum = sum}
 
 type DiceSet with
     member this.roll() =
         let rnd = new System.Random()
         this.rollBy(rnd)
 
+    /// This is not feasible currently. I need a new idea on how to manage my results correctly.
     member this.rollBy(rnd:Random) =
-        let results = 
-            [
-                for i in 1 .. this.SetCount do
-                    let results = this.DiceRolls |> Seq.map (fun d -> d.rollBy(rnd))
-                    SetResult.create(i, ResizeArray(results))
-            ]
-            |> ResizeArray
+        let results =
+            [|
+                for count in 1 .. this.SetCount do
+                    let diceResults = this.Dice |> Array.ofSeq |> Array.map (fun d -> d.rollBy(rnd))
+                    let sum = 
+                        diceResults 
+                        |> Array.fold (fun acc d -> 
+                            d.Command.AsFunction acc d.DiceRollSum
+                        ) 0
+                    SetResult.create(count, diceResults, sum)
+            |]
         {this with Results = results}
+
+type DiceSets with
+    member this.roll() =
+        let rnd = new System.Random()
+        this.rollBy(rnd)
+
+    member this.rollBy(rnd:Random) =
+        let nextSets = 
+            [|
+                for i in 0 .. (this.DiceSets.Count-1) do
+                    let set = this.DiceSets.[i]
+                    set.rollBy(rnd)
+            |]
+            |> ResizeArray
+        { this with DiceSets = nextSets }

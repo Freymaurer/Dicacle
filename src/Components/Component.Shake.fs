@@ -22,7 +22,7 @@ type Intensity =
 
 let DiceShake(sets: DiceSets) =
     let shakeAnimation = 
-        let maxDiceCount = sets.DiceSets |> Seq.collect (fun x -> x.DiceRolls) |> Seq.map (fun x -> x.DiceCount) |> Seq.max
+        let maxDiceCount = sets.DiceSets |> Seq.collect (fun x -> x.Results) |> Seq.collect (fun x -> x.Dice) |> Seq.collect (fun x -> x.DiceRolled) |> Seq.max
         if maxDiceCount < 5 then Intensity.None
         elif maxDiceCount < 10 then Intensity.Light
         elif maxDiceCount < 15 then Intensity.Medium

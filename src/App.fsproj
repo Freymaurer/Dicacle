@@ -12,6 +12,7 @@
     <Compile Include="Dice\Dice.Icon.fs" />
     <Compile Include="Dice\Dice.Roll.fs" />
     <Compile Include="Dice\Dice.Parsing.fs" />
+    <Compile Include="Dice\Dice.Controller.fs" />
     <Compile Include="Dice\Dice.HtmlAux.fs" />
     <Compile Include="LocalStorage.fs" />
     <Compile Include="States.fs" />

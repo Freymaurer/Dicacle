@@ -1,4 +1,4 @@
-module Tests.DiceRoll
+module Tests.Dice.Roll
 
 #if FABLE_COMPILER
 open Fable.Mocha
@@ -28,7 +28,7 @@ let tests_explode = testList "explode" [
         let treshold = 6
         let rnd = new System.Random()
         let rolls = ResizeArray([1..10])
-        RollAux.explode(Explode.Once treshold, 10, rolls)  rnd
+        RollAux.explode(Explode treshold, 10, rolls)  rnd
         for i in 0 .. (rolls.Count-1) do
             let before = i+1
             let current = rolls.[i]
@@ -41,22 +41,22 @@ let tests_explode = testList "explode" [
 let tests_keepDrop = testList "keepDrop" [
     testCase "DropHighest" <| fun _ ->
         let rolls = ResizeArray([1..10])
-        RollAux.keepDrop(KeepDrop.DropHighest 2, rolls)
+        RollAux.keepDrop(DropHighest 2, rolls)
         let expected = [|1..8|]
         Expect.equal (Array.ofSeq rolls) expected ""
     testCase "DropLowest" <| fun _ ->
         let rolls = ResizeArray([1..10])
-        RollAux.keepDrop(KeepDrop.DropLowest 2, rolls)
+        RollAux.keepDrop(DropLowest 2, rolls)
         let expected = [|3..10|]
         Expect.equal (Array.ofSeq rolls) expected ""
     testCase "KeepHighest" <| fun _ ->
         let rolls = ResizeArray([1..10])
-        RollAux.keepDrop(KeepDrop.KeepHighest 2, rolls)
+        RollAux.keepDrop(KeepHighest 2, rolls)
         let expected = [|9;10|]
         Expect.equal (Array.ofSeq rolls) expected ""
     testCase "KeepLowest" <| fun _ ->
         let rolls = ResizeArray([1..10])
-        RollAux.keepDrop(KeepDrop.KeepLowest 2, rolls)
+        RollAux.keepDrop(KeepLowest 2, rolls)
         let expected = [|1;2|]
         Expect.equal (Array.ofSeq rolls) expected ""
 ]

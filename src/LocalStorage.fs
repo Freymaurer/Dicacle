@@ -1,4 +1,4 @@
-﻿module LocalStorage
+﻿namespace LocalStorage
 
 [<RequireQualifiedAccess>]
 module DiceStorage =

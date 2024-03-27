@@ -9,8 +9,8 @@ open Expecto
 #endif
 let tests = 
     testList "main" [
-        Tests.DiceRoll.main
-        Tests.Regex.main
+        Tests.Dice.Parsing.main
+        Tests.Dice.Roll.main
     ]
 
 [<EntryPoint>]
