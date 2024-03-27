@@ -1,7 +1,5 @@
 ﻿module Tests.Dice.Parsing
 
-open Expecto
-
 open Dice
 open Dice.Parsing
 
@@ -159,60 +157,60 @@ let private tests_DiceOperations = testList "DiceOperations" [
         testCase "simple keep short" <| fun _ ->
             let input = "k1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepHighest 1 |> Some
+            let expected = KeepDrop.KeepHighest 1 |> Some
             Expect.equal actual expected ""
         testCase "simple keep" <| fun _ ->
             let input = "kh1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepHighest 1 |> Some
+            let expected = KeepDrop.KeepHighest 1 |> Some
             Expect.equal actual expected ""
         testCase "simple keep lowest" <| fun _ ->
             let input = "kl1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepLowest 1 |> Some
+            let expected = KeepDrop.KeepLowest 1 |> Some
             Expect.equal actual expected ""
         testCase "simple drop short" <| fun _ ->
             let input = "d1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.DropLowest 1 |> Some
+            let expected = KeepDrop.DropLowest 1 |> Some
             Expect.equal actual expected ""
         testCase "simple drop" <| fun _ ->
             let input = "dl1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.DropLowest 1 |> Some
+            let expected = KeepDrop.DropLowest 1 |> Some
             Expect.equal actual expected ""
         testCase "simple drop highest" <| fun _ ->
             let input = "dh1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.DropHighest 1 |> Some
+            let expected = KeepDrop.DropHighest 1 |> Some
             Expect.equal actual expected ""
         testCase "mixed" <| fun _ ->
             let input = "kl2ir1e6"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepLowest 2 |> Some
+            let expected = KeepDrop.KeepLowest 2 |> Some
             Expect.equal actual expected ""
         testCase "mixed 2" <| fun _ ->
             let input = "ir1e6k2"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepHighest 2 |> Some
+            let expected = KeepDrop.KeepHighest 2 |> Some
             Expect.equal actual expected ""
         testCase "multiple keepdrops" <| fun _ ->
             let input = "k2kld13kh1"
             let actual = Regex.Operations.getKeepDrop input
-            let expected = DiceOperations.KeepHighest 2 |> Some
+            let expected = KeepDrop.KeepHighest 2 |> Some
             Expect.equal actual expected "This will actually just use the first keep"
     ]
     testList "Explode" [
         testCase "once" <| fun _ ->
             let input = "e6"
             let actual = Regex.Operations.getExplode input
-            let expected = DiceOperations.Explode (6) |> Some
+            let expected = Explode.Once (6) |> Some
             Expect.equal actual expected ""
         testCase "infinity" <| fun _ ->
             let input1 = "ei5"
             let input2 = "ie5"
             let actualFunc = Regex.Operations.getExplode 
-            let expected = DiceOperations.ExplodeInfinity (5) |> Some
+            let expected = Explode.Infinity (5) |> Some
             Expect.equal (actualFunc input1) expected "input1"
             Expect.equal (actualFunc input2) expected "input2"
     ]
@@ -220,13 +218,13 @@ let private tests_DiceOperations = testList "DiceOperations" [
         testCase "once" <| fun _ ->
             let input = "r1"
             let actual = Regex.Operations.getReroll input
-            let expected = DiceOperations.Reroll (1) |> Some
+            let expected = Reroll.Once (1) |> Some
             Expect.equal actual expected ""
         testCase "infinity" <| fun _ ->
             let input1 = "ri2"
             let input2 = "ir2"
             let actualFunc = Regex.Operations.getReroll 
-            let expected = DiceOperations.RerollInfinity (2) |> Some
+            let expected = Reroll.Infinity (2) |> Some
             Expect.equal (actualFunc input1) expected "input1"
             Expect.equal (actualFunc input2) expected "input2"
     ]
@@ -234,27 +232,27 @@ let private tests_DiceOperations = testList "DiceOperations" [
         testCase "none" <| fun _ ->
             let input = None
             let actual = Regex.getOperations input 
-            let expected = [||]
+            let expected = None, None, None
             Expect.equal actual expected ""
         testCase "no match" <| fun _ ->
             let input = Some "ssdahsdmalösjdjka"
             let actual = Regex.getOperations input 
-            let expected = [||]
+            let expected = None, None, None
             Expect.equal actual expected ""
         testCase "single" <| fun _ ->
             let input = Some "ie1"
             let actual = Regex.getOperations input 
-            let expected = [|ExplodeInfinity(1)|]
+            let expected = None, Some (Explode.Infinity 1), None
             Expect.equal actual expected ""
         testCase "all allowed combined" <| fun _ ->
             let input = Some "k1e6r1"
             let actual = Regex.getOperations input 
-            let expected = [|Reroll(1); Explode(6); KeepHighest 1;|]
-            Expect.equal actual expected "Pay attention to order, this is also the calculation order: reroll -> explode -> keep/drop."
+            let expected = Some (Reroll.Once 1), Some (Explode.Once 6), Some (KeepDrop.KeepHighest 1)
+            Expect.equal actual expected ""
         testCase "multiple same category" <| fun _ ->
             let input = Some "k1kl2d1dh1"
             let actual = Regex.getOperations input 
-            let expected = [|KeepHighest 1;|]
+            let expected = None, None, Some (KeepDrop.KeepHighest 1)
             Expect.equal actual expected "Should ignore all but first."
     ]
 ]
@@ -395,7 +393,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|KeepHighest 2|])) 
+                    DiceRollInfo.create(Dice.create(5,20,keepdrop=KeepDrop.KeepHighest 2)) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -407,7 +405,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|KeepLowest 2|])) 
+                    DiceRollInfo.create(Dice.create(5,20,keepdrop=KeepDrop.KeepLowest 2)) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -419,7 +417,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|DropLowest 2|])) 
+                    DiceRollInfo.create(Dice.create(5,20,keepdrop=KeepDrop.DropLowest 2)) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -431,7 +429,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|DropHighest 2|])) 
+                    DiceRollInfo.create(Dice.create(5,20,keepdrop=KeepDrop.DropHighest 2)) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -443,7 +441,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|RerollInfinity (2)|])) 
+                    DiceRollInfo.create(Dice.create(5,20,reroll = Reroll.Infinity (2))) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -455,7 +453,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,20,[|Explode 6|])) 
+                    DiceRollInfo.create(Dice.create(5,20,explode=Explode.Once 6)) 
                 ]))
             |] |> ResizeArray
         let expected = DiceSets.create(input.Replace(" ",""),expected_sets, now)
@@ -467,10 +465,10 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         let expected_sets = 
             [|
                 DiceSet.create(1, ResizeArray([
-                    DiceRollInfo.create(Dice.create(5,8,[|KeepHighest 1|])) 
-                    DiceRollInfo.create(Dice.create(3,6,[|Explode 6|])) 
+                    DiceRollInfo.create(Dice.create(5,8,keepdrop=KeepDrop.KeepHighest 1)) 
+                    DiceRollInfo.create(Dice.create(3,6,Explode.Once 6)) 
                     DiceRollInfo.create(Dice.create(10,1), Command.Minus) 
-                    DiceRollInfo.create(Dice.create(2,11, [|DropLowest 1|]), Command.Minus) 
+                    DiceRollInfo.create(Dice.create(2,11,keepdrop=KeepDrop.DropLowest 1), Command.Minus) 
                     DiceRollInfo.create(Dice.create(11,1)) 
                 ]))
             |] |> ResizeArray
@@ -487,7 +485,7 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
                     DiceRollInfo.create(Dice.create(14))
                 ]))
                 DiceSet.create(10, ResizeArray([
-                    DiceRollInfo.create(Dice.create(4,6,[|KeepLowest 2|])) 
+                    DiceRollInfo.create(Dice.create(4,6,keepdrop=KeepDrop.KeepLowest 2)) 
                     DiceRollInfo.create(Dice.create(15))
                 ]))
             |] |> ResizeArray
@@ -512,7 +510,6 @@ let private test_parseGeneralDice = testList "parseGeneralDice" [
         Expect.equal actual expected "isEqual"
 ]
 
-[<Tests>]
 let main = testList "GeneralDice" [
     tests_Sets
     tests_DiceRollInfo

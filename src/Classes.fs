@@ -7,17 +7,37 @@ type FlatBonus = int
 type Threshold = int
 type Count = int
 
-type DiceOperations =
-    | KeepHighest of Count
-    | KeepLowest of Count
-    | DropHighest of Count
-    | DropLowest of Count
-    /// Reroll below Threshold
-    | Reroll of Threshold
-    | RerollInfinity of Threshold
-    /// Explode above Threshold
-    | Explode of Threshold
-    | ExplodeInfinity of Threshold
+/// Keep/Drop highest/lowest `int` dice results
+[<RequireQualifiedAccess>]
+type KeepDrop =
+    | KeepHighest of Threshold
+    | KeepLowest of Threshold
+    | DropHighest of Threshold
+    | DropLowest of Threshold
+
+/// Reroll any dice result below `Count`, `Once` or `Infinity`
+[<RequireQualifiedAccess>]
+type Reroll =
+    | Once of Count
+    | Infinity of Count
+    
+/// Explode any dice result above `int`, `Once` or `Inf`
+[<RequireQualifiedAccess>]
+type Explode =
+    | Once of Count
+    | Infinity of Count
+
+//type DiceOperations =
+//    | KeepHighest of Count
+//    | KeepLowest of Count
+//    | DropHighest of Count
+//    | DropLowest of Count
+//    /// Reroll below Threshold
+//    | Reroll of Threshold
+//    | RerollInfinity of Threshold
+//    /// Explode above Threshold
+//    | Explode of Threshold
+//    | ExplodeInfinity of Threshold
 
 type [<RequireQualifiedAccess>] Command = 
     | Plus
@@ -38,7 +58,9 @@ open System
 type Dice = {
     DiceCount: DiceCount
     DiceSize: DiceSize
-    Operations: DiceOperations []
+    Explode: Explode option
+    Reroll: Reroll option
+    KeepDrop: KeepDrop option
 } with
     /// <summary>
     /// Used to create most inner dice roll information. 
@@ -46,10 +68,12 @@ type Dice = {
     /// <param name="count"></param>
     /// <param name="size">defaultArg: 1</param>
     /// <param name="operations">defaultArg: 0</param>
-    static member create (count, ?size, ?operations: DiceOperations []) = {
+    static member create (count, ?size, ?explode, ?reroll, ?keepdrop) = {
         DiceCount = count
         DiceSize = defaultArg size 1
-        Operations = defaultArg operations Array.empty
+        Explode = explode
+        Reroll = reroll
+        KeepDrop = keepdrop
     }
 
 [<CustomEquality; NoComparison>]

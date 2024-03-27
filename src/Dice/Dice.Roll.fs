@@ -14,7 +14,6 @@ let rollMultipleBy(count:int, max: int) =
                 yield rnd.Next(1, max+1)
         ])  
 
-
 module RollAux =
 
     module RerollAux =
@@ -66,16 +65,14 @@ module RollAux =
                         {|sum=sum; explosions=tries|}
                 loop 0 roll roll
 
-    let reroll(reroll: DiceOperations, diceSize: DiceSize, rollArr: ResizeArray<int>) =
+    let reroll(t: Reroll, diceSize: int, rollArr: ResizeArray<int>) =
         fun (rnd:Random) ->
             let prepareReroll = 
-                match reroll with 
-                | Reroll treshold -> 
+                match t with 
+                | Reroll.Once treshold -> 
                     fun roll -> RerollAux.rerollOnce(treshold,roll,diceSize) rnd
-                | RerollInfinity treshold -> 
+                | Reroll.Infinity treshold -> 
                     fun roll -> RerollAux.rerollInf(treshold,roll,diceSize) rnd
-                | _ ->
-                    failwith "Passed non-reroll operation into 'reroll' function."
             //let mutable l = []
             for i in 0 .. (rollArr.Count-1) do
                 let roll = rollArr.[i]
@@ -84,16 +81,14 @@ module RollAux =
         //    l <- ex::l
         //l |> List.rev
 
-    let explode(explode: DiceOperations, diceSize: int, rollArr: ResizeArray<int>) =
+    let explode(t: Explode, diceSize: int, rollArr: ResizeArray<int>) =
         fun (rnd:Random) ->
             let prepareExplode = 
-                match explode with 
-                | Explode treshold -> 
+                match t with 
+                | Explode.Once treshold -> 
                     fun roll -> ExplodeAux.explodeOnce(treshold,roll,diceSize) rnd
-                | ExplodeInfinity treshold -> 
+                | Explode.Infinity treshold -> 
                     fun roll -> ExplodeAux.explodeInf(treshold,roll,diceSize) rnd
-                | _ ->
-                    failwith "Passed non-explode operation into 'explode' function."
             //let mutable l = []
             for i in 0 .. (rollArr.Count-1) do
                 let roll = rollArr.[i]
@@ -102,39 +97,20 @@ module RollAux =
         //    l <- ex::l
         //l |> List.rev
 
-    let keepDrop(kdt: DiceOperations, rollArr:ResizeArray<int>) =
+    let keepDrop(kdt: KeepDrop, rollArr:ResizeArray<int>) =
         rollArr.Sort()
         match kdt with
-        | KeepHighest n -> 
+        | KeepDrop.KeepHighest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(0,diff)
-        | KeepLowest n -> 
+        | KeepDrop.KeepLowest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(n,diff)
-        | DropHighest n -> 
+        | KeepDrop.DropHighest n -> 
             let diff = rollArr.Count - n
             rollArr.RemoveRange(diff,n)
-        | DropLowest n ->
+        | KeepDrop.DropLowest n ->
             rollArr.RemoveRange(0,n)
-        | _ ->
-            failwith "Passed non-keep/drop operation into 'keepDrop' function."
-
-type DiceOperations with
-    /// <summary>
-    /// This function updates the given ResizeArray mutably.
-    /// </summary>
-    /// <param name="diceSize"></param>
-    /// <param name="r"></param>
-    /// <param name="rnd"></param>
-    static member rollBy(diceSize, r, rnd) = 
-        fun (operation: DiceOperations) ->
-            match operation with
-            | KeepHighest _ | KeepLowest _ | DropHighest _ | DropLowest _ ->
-                RollAux.keepDrop(operation, r)
-            | Reroll _ | RerollInfinity _ ->
-                RollAux.reroll(operation, diceSize, r) rnd
-            | Explode _ | ExplodeInfinity _ ->
-                RollAux.explode(operation, diceSize, r) rnd
 
 type Dice with
     member this.roll(): ResizeArray<int> = 
@@ -143,9 +119,16 @@ type Dice with
 
     member this.rollBy(rnd:Random) : ResizeArray<int> =
         let rolls = rollMultipleBy(this.DiceCount, this.DiceSize) rnd
-        for diceOperation in this.Operations do
-            DiceOperations.rollBy(this.DiceSize, rolls, rnd) diceOperation
+        if this.Reroll.IsSome then
+            RollAux.reroll(this.Reroll.Value,this.DiceSize,rolls) rnd
+        if this.Explode.IsSome then
+            RollAux.explode(this.Explode.Value,this.DiceSize,rolls) rnd
+        if this.KeepDrop.IsSome then
+            RollAux.keepDrop(this.KeepDrop.Value, rolls)
         rolls
+        //for diceOperation in this.Operations do
+        //    DiceOperations.rollBy(this.DiceSize, rolls, rnd) diceOperation
+        //rolls
 
 type DiceRollInfo with
     

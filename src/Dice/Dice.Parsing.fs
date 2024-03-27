@@ -8,7 +8,7 @@ open System.Text.RegularExpressions
 module Regex =
 
     [<LiteralAttribute>]
-    let private SetPattern = @"(?<setCount>\d*)?(?(setCount)\(|)(?<diceRolls>[a-zA-Z0-9+-]+)(?(setCount)\)|)"
+    let private SetPattern = @"((?<setCount>\d*)\()?(?<diceRolls>[a-zA-Z0-9+-]+)(\))?"
     let private SetRegex = Regex(SetPattern,RegexOptions.Singleline)
 
     [<LiteralAttribute>]
@@ -16,9 +16,9 @@ module Regex =
     let private DiceRegex = Regex(DicePattern,RegexOptions.Singleline)
 
     [<LiteralAttribute>]
-    let private DiceBasicPattern = @"^(?<dicecount>\d+)?(?<d>(?(dicecount)d{1}|d?))(?<dicesize>\d+)(?(dicecount)(?<operations>[a-zA-Z0-9]+))?$"
+    //let private DiceBasicPattern = @"^(?<dicecount>\d+)?(?<d>(?(dicecount)d{1}|d?))(?<dicesize>\d+)(?(dicecount)(?<operations>[a-zA-Z0-9]+))?$"
+    let private DiceBasicPattern = @"^((?<dicecount>\d+)?(?<d>d)(?<dicesize>\d+)(?<operations>[a-zA-Z0-9]+)?|\d+)$"
     let private DiceBasicRegex = Regex(DiceBasicPattern)
-
 
     module Operations = 
 
@@ -35,10 +35,10 @@ module Regex =
                 let count = int m.Groups.["count"].Value
                 let operation = 
                     match m.Groups.["operation"].Value.ToLower() with
-                    | "kh" | "k" -> DiceOperations.KeepHighest
-                    | "kl" -> DiceOperations.KeepLowest
-                    | "dl" | "d" -> DiceOperations.DropLowest
-                    | "dh" -> DiceOperations.DropHighest
+                    | "kh" | "k" -> KeepDrop.KeepHighest
+                    | "kl" -> KeepDrop.KeepLowest
+                    | "dl" | "d" -> KeepDrop.DropLowest
+                    | "dh" -> KeepDrop.DropHighest
                     | anyElse -> failwithf "Error. Unknown input for KeepDrop pattern: `%s`" anyElse
                 Some (operation count)
 
@@ -54,8 +54,8 @@ module Regex =
                 let threshold = int m.Groups.["threshold"].Value
                 let operation = 
                     match m.Groups.["operation"].Value.ToLower() with
-                    | "e" -> fun t -> DiceOperations.Explode t
-                    | "ie" | "ei" -> fun t -> DiceOperations.ExplodeInfinity t
+                    | "e" -> fun t -> Explode.Once t
+                    | "ie" | "ei" -> fun t -> Explode.Infinity t
                     | anyElse -> failwithf "Error. Unknown input for Explode pattern: `%s`" anyElse
                 Some (operation threshold)
                 
@@ -71,8 +71,8 @@ module Regex =
                 let threshold = int m.Groups.["threshold"].Value
                 let operation = 
                     match m.Groups.["operation"].Value.ToLower() with
-                    | "r" -> fun t -> DiceOperations.Reroll t
-                    | "ir" | "ri" -> fun t -> DiceOperations.RerollInfinity t
+                    | "r" -> fun t -> Reroll.Once t
+                    | "ir" | "ri" -> fun t -> Reroll.Infinity t
                     | anyElse -> failwithf "Error. Unknown input for Explode pattern: `%s`" anyElse
                 Some (operation threshold)
 
@@ -158,13 +158,9 @@ module Regex =
 
     let getOperations (str: string option) =
         match str with
-        | None -> [||]
+        | None -> None, None, None
         | Some str ->
-            let operations = ResizeArray()
-            Operations.getReroll str |> Option.iter (fun r -> operations.Add r)
-            Operations.getExplode str |> Option.iter (fun r -> operations.Add r)
-            Operations.getKeepDrop str |> Option.iter (fun r -> operations.Add r)
-            operations.ToArray()
+            Operations.getReroll str, Operations.getExplode str, Operations.getKeepDrop str
         
 open Regex
 
@@ -181,8 +177,8 @@ let parseGeneralDice (input: string, now: System.DateTime) =
                     // get the number of dice and the dice size, as well as the raw operations (keep/drop,explode,reroll)
                     let diceCount, diceSize, rawOperations = getDiceBasic rawBasicDiceStr 
                     // get operations parsed
-                    let operations = getOperations rawOperations
-                    let singleDice = Dice.create(diceCount,diceSize,operations)
+                    let reroll, explode, keepdrop = getOperations rawOperations
+                    let singleDice = Dice.create(diceCount,diceSize,?explode = explode,?reroll=reroll,?keepdrop = keepdrop)
                     DiceRollInfo.create(singleDice,command)
                 )
                 |> ResizeArray
