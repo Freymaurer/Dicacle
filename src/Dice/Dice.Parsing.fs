@@ -17,7 +17,7 @@ module Regex =
 
     [<LiteralAttribute>]
     //let private DiceBasicPattern = @"^(?<dicecount>\d+)?(?<d>(?(dicecount)d{1}|d?))(?<dicesize>\d+)(?(dicecount)(?<operations>[a-zA-Z0-9]+))?$"
-    let private DiceBasicPattern = @"^((?<dicecount>\d+)?(?<d>d)(?<dicesize>\d+)(?<operations>[a-zA-Z0-9]+)?|\d+)$"
+    let private DiceBasicPattern = @"^((?<dicecount>\d+)?(?<d>d)(?<dicesize>\d+)(?<operations>[a-zA-Z0-9]+)?|(?<simpledicesize>\d+))$"
     let private DiceBasicRegex = Regex(DiceBasicPattern)
 
     module Operations = 
@@ -147,7 +147,7 @@ module Regex =
             let defaultDiceCount (dicecount:string) = if dicecount = "" then 1 else int dicecount
             // if no `d` is present we have only a flat bonus/malus we model this with flatbonus = dicecount and dicesize = 1
             if m.Groups.["d"].Value = "" then
-                int m.Groups.["dicesize"].Value,
+                int m.Groups.["simpledicesize"].Value,
                 1,
                 None
             // if `d` is present we follow normal groups
