@@ -14,118 +14,99 @@ let rollMultipleBy(count:int, max: int) =
                 yield rnd.Next(1, max+1)
         ])  
 
-module RollAux =
+module Helper =
 
-    module RerollAux =
-
-        /// reroll if roll <= threshold
-        let rerollOnce(treshold: int, roll: int, diceSize: int) =
-            fun (rnd:Random) ->
-                if roll <= treshold then 
-                    rollOnceBy(diceSize, rnd)
-                else 
-                    roll
-                |> fun r -> {|rerolls=1; roll=r|}
-
-        /// reroll inf (max 100) if roll <= threshold
-        let rerollInf(treshold: int, roll: int, diceSize: int) =
-            fun (rnd:Random) ->
-                let rec loop (tries: int) (currentRoll: int) =
-                    if tries >= 100 then
-                        {|rerolls=tries; roll=currentRoll|}
-                    elif currentRoll <= treshold then 
-                        let nextRoll = rollOnceBy(diceSize,rnd)
-                        loop (tries+1) nextRoll
-                    else 
-                        {|rerolls=tries; roll=currentRoll|}
-                loop 0 roll
-
-    module ExplodeAux =
-
-        /// explode if roll >= threshold
-        let explodeOnce(treshold: int, roll: int, diceSize: int) =
-            fun (rnd:Random) ->
-                if roll >= treshold then 
-                    roll+rollOnceBy(diceSize, rnd)
-                else 
-                    roll
-                |> fun r -> {|sum=r; explosions=1|}
-
-        /// explode inf (max 100) if roll >= threshold
-        let explodeInf(treshold: int, roll: int, diceSize: int) =
-            fun (rnd:Random) ->
-                let rec loop (tries: int) (lastRoll: int) (sum: int) =
-                    if tries >= 100 then
-                        {|sum=sum; explosions=tries|}
-                    elif lastRoll >= treshold then 
-                        let nextRoll = rollOnceBy(diceSize,rnd) 
-                        let sum = sum + nextRoll
-                        loop (tries+1) nextRoll sum
-                    else 
-                        {|sum=sum; explosions=tries|}
-                loop 0 roll roll
-
-    let reroll(t: Reroll, diceSize: int, rollArr: ResizeArray<int>) =
+    let private rollDiceAcc(initialRoll: int, diceSize: int, maxTries: int, nextRollEvaluator: int -> bool) =
         fun (rnd:Random) ->
-            let prepareReroll = 
-                match t with 
-                | Reroll.Once treshold -> 
-                    fun roll -> RerollAux.rerollOnce(treshold,roll,diceSize) rnd
-                | Reroll.Infinity treshold -> 
-                    fun roll -> RerollAux.rerollInf(treshold,roll,diceSize) rnd
-            //let mutable l = []
-            for i in 0 .. (rollArr.Count-1) do
-                let roll = rollArr.[i]
-                let ex = prepareReroll roll
-                rollArr.[i] <- ex.roll
-        //    l <- ex::l
-        //l |> List.rev
+            let rec loop (tries: int) (currentRoll: int) (acc: int list)=
+                if tries >= maxTries then
+                    acc
+                elif nextRollEvaluator currentRoll then 
+                    let nextRoll = rollOnceBy(diceSize,rnd)
+                    let nextAcc = nextRoll::acc
+                    loop (tries+1) nextRoll nextAcc
+                else 
+                    acc
+            loop 0 initialRoll [initialRoll]
 
-    let explode(t: Explode, diceSize: int, rollArr: ResizeArray<int>) =
+    let explodeDice(treshold: int, roll: int, diceSize: int, maxTries: int) =
+        let nextRollEvaluator nextRoll = nextRoll >= treshold
+        rollDiceAcc (roll,diceSize,maxTries,nextRollEvaluator)
+
+    let reroll(t: Reroll, diceSize: int, current: ResizeArray<int>) = 
         fun (rnd:Random) ->
-            let prepareExplode = 
-                match t with 
-                | Explode.Once treshold -> 
-                    fun roll -> ExplodeAux.explodeOnce(treshold,roll,diceSize) rnd
-                | Explode.Infinity treshold -> 
-                    fun roll -> ExplodeAux.explodeInf(treshold,roll,diceSize) rnd
-            //let mutable l = []
-            for i in 0 .. (rollArr.Count-1) do
-                let roll = rollArr.[i]
-                let ex = prepareExplode roll
-                rollArr.[i] <- ex.sum
-        //    l <- ex::l
-        //l |> List.rev
+            let prepareReroll = fun roll -> 
+                let nextRollEvaluator nextRoll = nextRoll <= t.Threshold
+                rollDiceAcc (roll,diceSize,t.MaxTries,nextRollEvaluator) rnd
+            let nextResult: ResizeArray<Rerolls> = ResizeArray(current.Count)
+            for roll in current do
+                let acc = prepareReroll roll
+                nextResult.Add(acc)
+            nextResult
 
-    let keepDrop(kdt: KeepDrop, rollArr:ResizeArray<int>) =
-        rollArr.Sort()
-        match kdt with
-        | KeepDrop.KeepHighest n -> 
-            let diff = rollArr.Count - n
-            rollArr.RemoveRange(0,diff)
-        | KeepDrop.KeepLowest n -> 
-            let diff = rollArr.Count - n
-            rollArr.RemoveRange(n,diff)
-        | KeepDrop.DropHighest n -> 
-            let diff = rollArr.Count - n
-            rollArr.RemoveRange(diff,n)
-        | KeepDrop.DropLowest n ->
-            rollArr.RemoveRange(0,n)
+    let explode(t: Explode, diceSize: int, current: ResizeArray<int>) = 
+        fun (rnd:Random) ->
+            let prepareReroll = fun roll -> 
+                let nextRollEvaluator nextRoll = nextRoll >= t.Threshold
+                rollDiceAcc (roll,diceSize,t.MaxTries,nextRollEvaluator) rnd
+            let nextResult: ResizeArray<Rerolls> = ResizeArray(current.Count)
+            for roll in current do
+                let acc = prepareReroll roll
+                nextResult.Add(acc)
+            nextResult
+
+    let keepDrop(kdt: KeepDrop, current: ResizeArray<int>) =
+        current.Sort()
+        let c = current.Count
+        let removeRangeLow, removeRangeHigh =
+            match kdt with
+            | KeepDrop.KeepHighest n -> 
+                let diff = c - n
+                (0,diff-1)
+            | KeepDrop.KeepLowest n -> 
+                let diff = c - n
+                (n,n+diff-1)
+            | KeepDrop.DropHighest n -> 
+                let diff = c - n
+                (diff,n+diff-1)
+            | KeepDrop.DropLowest n ->
+                (0,n-1)
+        let next = ResizeArray(current.Count)
+        for i in 0..(c-1) do
+            let e = current.[i]
+            if i >= removeRangeLow && i <= removeRangeHigh then
+                next.Add (Remove e)
+            else
+                next.Add (Ok e)
+        next
 
 type Dice with
-    member this.roll(): ResizeArray<int> = 
+    member this.roll(): DiceResult = 
         let rnd = new Random()
         this.rollBy(rnd)
 
-    member this.rollBy(rnd:Random) : ResizeArray<int> =
+    member this.rollBy(rnd:Random): DiceResult =
         let rolls = rollMultipleBy(this.DiceCount, this.DiceSize) rnd
-        if this.Reroll.IsSome then
-            RollAux.reroll(this.Reroll.Value,this.DiceSize,rolls) rnd
-        if this.Explode.IsSome then
-            RollAux.explode(this.Explode.Value,this.DiceSize,rolls) rnd
-        if this.KeepDrop.IsSome then
-            RollAux.keepDrop(this.KeepDrop.Value, rolls)
-        rolls
+        let result = DiceResult.init rolls
+        result
+        |> fun r ->
+            let rerolls = 
+                this.Reroll |> Option.map (fun config ->
+                    Helper.reroll(config,this.DiceSize,r.Current) rnd
+                )
+            {r with Rerolls = rerolls}
+        |> fun r ->
+            let explodes = 
+                this.Explode |> Option.map (fun config ->
+                    Helper.explode(config,this.DiceSize,r.Current) rnd
+                )
+            {r with Explodes = explodes}
+        |> fun r ->
+            let keepDrop = 
+                this.KeepDrop |> Option.map (fun config ->
+                    Helper.keepDrop(config,r.Current)
+                )
+            {r with KeepDrops = keepDrop}
         //for diceOperation in this.Operations do
         //    DiceOperations.rollBy(this.DiceSize, rolls, rnd) diceOperation
         //rolls
@@ -138,8 +119,7 @@ type DiceRollInfo with
     
     member this.rollBy(rnd:Random) =
         let r = this.Dice.rollBy(rnd)
-        let sum = Seq.sum r
-        {this with DiceRolled = r; DiceRollSum = sum}
+        {this with Result = Some r}
 
 type DiceSet with
     member this.roll() =
@@ -155,7 +135,7 @@ type DiceSet with
                     let sum = 
                         diceResults 
                         |> Array.fold (fun acc d -> 
-                            d.Command.AsFunction acc d.DiceRollSum
+                            d.Command.AsFunction acc d.Result.Value.Sum
                         ) 0
                     SetResult.create(count, diceResults, sum)
             |]

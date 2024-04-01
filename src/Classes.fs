@@ -10,34 +10,56 @@ type Count = int
 /// Keep/Drop highest/lowest `int` dice results
 [<RequireQualifiedAccess>]
 type KeepDrop =
-    | KeepHighest of Threshold
-    | KeepLowest of Threshold
-    | DropHighest of Threshold
-    | DropLowest of Threshold
+    | KeepHighest of Count
+    | KeepLowest of Count
+    | DropHighest of Count
+    | DropLowest of Count
+
+type KeepDropResult =
+    | Ok of int
+    | Remove of int
+    with
+        member this.Number =
+            match this with
+            | Ok i -> i
+            | Remove i -> i
+        member this.NumberOk =
+            match this with
+            | Ok i -> Some i
+            | Remove _ -> None
 
 /// Reroll any dice result below `Count`, `Once` or `Infinity`
 [<RequireQualifiedAccess>]
 type Reroll =
-    | Once of Count
-    | Infinity of Count
+    | Once of Threshold
+    | Infinity of Threshold
+
+    with
+        member this.MaxTries =
+            match this with
+            | Once _ -> 1
+            | Infinity _ -> 100
+        member this.Threshold =
+            match this with
+            | Once t -> t
+            | Infinity t -> t
     
 /// Explode any dice result above `int`, `Once` or `Inf`
 [<RequireQualifiedAccess>]
 type Explode =
-    | Once of Count
-    | Infinity of Count
+    | Once of Threshold
+    | Infinity of Threshold
 
-//type DiceOperations =
-//    | KeepHighest of Count
-//    | KeepLowest of Count
-//    | DropHighest of Count
-//    | DropLowest of Count
-//    /// Reroll below Threshold
-//    | Reroll of Threshold
-//    | RerollInfinity of Threshold
-//    /// Explode above Threshold
-//    | Explode of Threshold
-//    | ExplodeInfinity of Threshold
+    with
+        member this.MaxTries =
+            match this with
+            | Once _ -> 1
+            | Infinity _ -> 100
+        member this.Threshold =
+            match this with
+            | Once t -> t
+            | Infinity t -> t
+
 
 type [<RequireQualifiedAccess>] Command = 
     | Plus
@@ -76,21 +98,56 @@ type Dice = {
         KeepDrop = keepdrop
     }
 
+type Rerolls = int list
+type Explodes = int list
+
+type DiceResult = {
+    InitialRoll: ResizeArray<int>
+    Rerolls: ResizeArray<Rerolls> option
+    Explodes: ResizeArray<Explodes> option
+    KeepDrops: ResizeArray<KeepDropResult> option
+} with
+    static member init(init: ResizeArray<int>) = { 
+        InitialRoll = init; 
+        Rerolls = None
+        Explodes = None
+        KeepDrops = None
+    }
+    member this.Current =
+        match this with
+        | {KeepDrops = Some l} ->
+            let r = ResizeArray()
+            for e in l do
+                if e.NumberOk.IsSome then 
+                    r.Add(e.NumberOk.Value)
+            r
+        | {Explodes = Some l} ->
+            let r = ResizeArray()
+            for e in l do
+                r.Add (List.sum e)
+            r
+        | {Rerolls = Some l} ->
+            let r = ResizeArray()
+            for e in l do
+                r.Add (List.head e)
+            r
+        | _ -> 
+            ResizeArray(this.InitialRoll)
+
+    member this.Sum = this.Current |> Seq.sum
+
 [<CustomEquality; NoComparison>]
 type DiceRollInfo = {
     Dice: Dice
     /// (+) or (-)
     Command: Command
-    /// Raw rolled dice results before sum
-    DiceRolled: ResizeArray<int>
     /// Sum of rolles dice
-    DiceRollSum: int
+    Result: DiceResult option
 } with
-    static member create(dice, ?command, ?diceRolled, ?diceRollSum) = {
+    static member create(dice, ?command, ?result) = {
         Dice = dice
         Command = defaultArg command Command.Plus
-        DiceRolled = defaultArg diceRolled <| ResizeArray()
-        DiceRollSum = defaultArg diceRollSum 0
+        Result = defaultArg result None
     }
 
     override this.Equals(o: obj) =
@@ -98,9 +155,7 @@ type DiceRollInfo = {
         | :? DiceRollInfo as other->
             this.Dice = other.Dice
             && this.Command = other.Command
-            && Seq.length this.DiceRolled = Seq.length other.DiceRolled
-            && Seq.forall2 (fun t o -> t = o) this.DiceRolled other.DiceRolled
-            && this.DiceRollSum = other.DiceRollSum
+            && this.Result = other.Result
         | _ -> 
             failwith "Error. Cannot compare `DiceRollInfo` with another type."
 

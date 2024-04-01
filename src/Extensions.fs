@@ -5,6 +5,8 @@ open System
 open Fable.Core
 open Fable.Core.JsInterop
 
+let log = fun o -> Browser.Dom.console.log o
+
 [<RequireQualifiedAccess>]
 module StaticFile =
 

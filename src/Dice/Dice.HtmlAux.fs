@@ -55,33 +55,37 @@ let diceIconOf(diceValue: int, diceSize:int) =
 
 type DiceRollInfo with
     member this.ToHtml() =
-        let size = this.Dice.DiceSize
-        let container (children: Fable.React.ReactElement list) = 
-            Html.span [
-                prop.children children
-            ]
-        let sum = 
-            Html.span [
-                prop.className "mr-2 dice-result-subsum"
-                prop.text $"{this.Command.AsString}{this.DiceRollSum}"
-            ]
-        let createDiceIcons() = 
-            [
-                sum
-                Html.span "["
-                for i in 0 .. (this.DiceRolled.Count-1) do
-                    let roll = this.DiceRolled.[i]
-                    let isLast = i = this.DiceRolled.Count-1
-                    diceIconOf(roll,size)
-                    if not isLast then 
-                        Html.span " + "
-                Html.span "]"
-            ]
-        if size = 0 then 
-            [sum] 
-        else 
-            createDiceIcons()
-        |> container
+        if this.Result.IsNone then
+            Html.span "-"
+        else
+            let result = this.Result.Value
+            let size = this.Dice.DiceSize
+            let container (children: Fable.React.ReactElement list) = 
+                Html.span [
+                    prop.children children
+                ]
+            let sum = 
+                Html.span [
+                    prop.className "mr-2 dice-result-subsum"
+                    prop.text $"{this.Command.AsString}{result.Sum}"
+                ]
+            let createDiceIcons() = 
+                [
+                    sum
+                    Html.span "["
+                    for i in 0 .. (result.Current.Count-1) do
+                        let roll = result.Current.[i]
+                        let isLast = i = result.Current.Count-1
+                        diceIconOf(roll,size)
+                        if not isLast then 
+                            Html.span " + "
+                    Html.span "]"
+                ]
+            if size = 0 then 
+                [sum] 
+            else 
+                createDiceIcons()
+            |> container
 
 type SetResult with
     member this.ToHtml() =

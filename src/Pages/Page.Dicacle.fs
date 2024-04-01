@@ -16,7 +16,7 @@ let private event_rollDiceFromString(input:string, state:State, setState: State 
     //    |> List.map (fun x -> x.rollBy(rnd))
     //    |> ResizeArray
     //let diceSets = DiceSets.create(input, nextDiceSets)
-    Browser.Dom.console.log("[DICE]", diceSets)
+    log("[DICE]", diceSets)
     //Component.Shake.DiceShake(diceSets)
     let historySize = 200
     let nextHistory =
