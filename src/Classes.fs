@@ -27,6 +27,7 @@ type KeepDropResult =
             match this with
             | Ok i -> Some i
             | Remove _ -> None
+        member this.IsRemoved = match this with | Remove _ -> true | _ -> false
 
 /// Reroll any dice result below `Count`, `Once` or `Infinity`
 [<RequireQualifiedAccess>]
@@ -113,6 +114,9 @@ type DiceResult = {
         Explodes = None
         KeepDrops = None
     }
+    /// <summary>
+    /// This function is used during roll calculation to alway get the latest
+    /// </summary>
     member this.Current =
         match this with
         | {KeepDrops = Some l} ->
@@ -133,6 +137,17 @@ type DiceResult = {
             r
         | _ -> 
             ResizeArray(this.InitialRoll)
+    member this.Filled =
+        let init = this.InitialRoll
+        let rerolls = this.Rerolls |> Option.defaultValue (ResizeArray([for v in init do [v]]))
+        let explodes = this.Explodes |> Option.defaultValue (ResizeArray([for v in rerolls do [List.head v]]))
+        let keepdrop = this.KeepDrops |> Option.defaultValue (ResizeArray([for v in explodes do List.sum v |> Ok]))
+        {
+            InitialRoll = init
+            Rerolls     = Some rerolls
+            Explodes    = Some explodes
+            KeepDrops   = Some keepdrop
+        }
 
     member this.Sum = this.Current |> Seq.sum
 

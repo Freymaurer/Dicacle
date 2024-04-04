@@ -145,10 +145,10 @@ module Regex =
             failwithf "No `DiceBasic` matches for %s" str
         | true ->
             let defaultDiceCount (dicecount:string) = if dicecount = "" then 1 else int dicecount
-            // if no `d` is present we have only a flat bonus/malus we model this with flatbonus = dicecount and dicesize = 1
+            // if no `d` is present we have only a flat bonus/malus we model this with flatbonus = dicecount and dicesize = 0
             if m.Groups.["d"].Value = "" then
                 int m.Groups.["simpledicesize"].Value,
-                1,
+                0,
                 None
             // if `d` is present we follow normal groups
             else

@@ -15,7 +15,8 @@ let getDiceExample() =
     let rnd = new System.Random()
     dice_examples.[rnd.Next(dice_examples.Length)]
 
-let diceIconOf(diceValue: int, diceSize:int) =
+let diceIconOf(diceValue0: KeepDropResult, diceSize:int) =
+    let diceValue = diceValue0.Number
     let diceImg = 
         match diceSize with
         | 4 -> Dice.Icon.d4
@@ -26,13 +27,16 @@ let diceIconOf(diceValue: int, diceSize:int) =
         | 20 -> Dice.Icon.d20
         | _ -> Dice.Icon.alt
     let color = 
-        if diceValue > diceSize then Bulma.color.hasTextLink//explode
-        elif diceValue = diceSize then Bulma.color.hasTextSuccessDark //max roll
+        if diceValue0.IsRemoved then Bulma.color.hasTextGrey
+        elif diceValue > diceSize then Bulma.color.hasTextLink//explode
+        elif diceValue = diceSize then Bulma.color.hasTextSuccess //max roll
         elif diceValue = 1 then Bulma.color.hasTextDanger //min roll
         else Bulma.color.isBlack
     Bulma.icon [
         Bulma.icon.isMedium
-        prop.style [style.position.relative]
+        prop.style [
+            style.position.relative
+        ]
         prop.children [
             Html.img [
                 prop.style [style.opacity 0.4]
@@ -49,6 +53,18 @@ let diceIconOf(diceValue: int, diceSize:int) =
                     style.fontWeight.bold
                 ]
                 prop.text diceValue
+            ]
+            if diceValue0.IsRemoved then Html.i [
+                prop.style [
+                    style.position.absolute; 
+                    style.top (length.perc 50) 
+                    style.left (length.perc 50) 
+                    style.transform(transform.translate(length.perc -50, length.perc -50))
+                    style.zIndex 3; 
+                    style.fontSize (length.rem 3);
+                    style.opacity(0.4)
+                ]
+                prop.className "fa-solid fa-xmark"
             ]
         ]
     ]
@@ -70,12 +86,13 @@ type DiceRollInfo with
                     prop.text $"{this.Command.AsString}{result.Sum}"
                 ]
             let createDiceIcons() = 
+                let resultKeepDrops = result.Filled.KeepDrops.Value
                 [
                     sum
                     Html.span "["
-                    for i in 0 .. (result.Current.Count-1) do
-                        let roll = result.Current.[i]
-                        let isLast = i = result.Current.Count-1
+                    for i in 0 .. (resultKeepDrops.Count-1) do
+                        let roll = resultKeepDrops.[i]
+                        let isLast = i = resultKeepDrops.Count-1
                         diceIconOf(roll,size)
                         if not isLast then 
                             Html.span " + "

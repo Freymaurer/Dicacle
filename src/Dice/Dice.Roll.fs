@@ -56,7 +56,6 @@ module Helper =
             nextResult
 
     let keepDrop(kdt: KeepDrop, current: ResizeArray<int>) =
-        current.Sort()
         let c = current.Count
         let removeRangeLow, removeRangeHigh =
             match kdt with
@@ -71,13 +70,18 @@ module Helper =
                 (diff,n+diff-1)
             | KeepDrop.DropLowest n ->
                 (0,n-1)
-        let next = ResizeArray(current.Count)
-        for i in 0..(c-1) do
-            let e = current.[i]
-            if i >= removeRangeLow && i <= removeRangeHigh then
-                next.Add (Remove e)
-            else
-                next.Add (Ok e)
+        let newArr = 
+            [|for i in 0 .. (c-1) do i, current.[i]|] 
+            |> Array.sortBy snd
+            |> Array.mapi (fun i (sourceI, v) ->
+                if i >= removeRangeLow && i <= removeRangeHigh then
+                    sourceI, (Remove v)
+                else
+                    sourceI, (Ok v)
+            )
+            |> Array.sortBy fst
+            |> Array.map snd
+        let next = ResizeArray(newArr)
         next
 
 type Dice with
@@ -107,9 +111,6 @@ type Dice with
                     Helper.keepDrop(config,r.Current)
                 )
             {r with KeepDrops = keepDrop}
-        //for diceOperation in this.Operations do
-        //    DiceOperations.rollBy(this.DiceSize, rolls, rnd) diceOperation
-        //rolls
 
 type DiceRollInfo with
     
